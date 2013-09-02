@@ -1,6 +1,7 @@
 package com.mobile.nuesoft;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.widget.RelativeLayout;
@@ -61,7 +62,10 @@ public class MainActivity extends FragmentActivity {
 	}
 	
 	private void init() {
-		PatientFragment frag = new PatientFragment();
+		Fragment frag = new PatientFragment();
 		this.getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, frag, PatientFragment.TAG).addToBackStack(PatientFragment.TAG).commit();
+		
+		frag = new NavigationFragment();
+		this.getSupportFragmentManager().beginTransaction().replace(R.id.left_drawer, frag, PatientFragment.TAG).addToBackStack(NavigationFragment.TAG).commit();
 	}
 }

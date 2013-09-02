@@ -10,5 +10,10 @@
     <string name="immunizations">Immunization</string>
     <string name="history">History</string>
 	<string name="patient_summary">Patient Summary</string>
+	<string name="overview">Overview</string>
+	<string name="reason_for_referral">Reason for referral</string>
+	<string name="reason_for_visit">Reason for visit</string>
+	<string name="current_referral">Current Referral</string>
+	<string name="patient_records">Patient Records</string>
     
 </resources>
