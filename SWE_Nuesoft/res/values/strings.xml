@@ -3,6 +3,12 @@
 
     <string name="app_name">Nuesoft</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
-
+    <string name="medication">Medication</string>
+    <string name="allergies">Allergies</string>
+    <string name="family_history">Family History</string>
+    <string name="social_information">Social Information</string>
+    <string name="immunizations">Immunization</string>
+    <string name="history">History</string>
+	<string name="patient_summary">Patient Summary</string>
+    
 </resources>

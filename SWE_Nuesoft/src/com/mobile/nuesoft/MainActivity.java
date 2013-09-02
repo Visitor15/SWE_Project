@@ -1,15 +1,26 @@
 package com.mobile.nuesoft;
 
 import android.os.Bundle;
-import android.app.Activity;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
+import android.widget.RelativeLayout;
 
-public class MainActivity extends Activity {
+import com.mobile.nuesoft.patient.PatientFragment;
+
+
+
+public class MainActivity extends FragmentActivity {
+	
+	private RelativeLayout mainContainer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		mainContainer = (RelativeLayout) findViewById(R.id.content_frame);
+		
+		init();
 	}
 
 	@Override
@@ -19,4 +30,38 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
+	@Override
+	public void onStart() {
+		super.onStart();
+	}
+    
+	@Override
+	public void onRestart() {
+		super.onRestart();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+	}
+	
+	private void init() {
+		PatientFragment frag = new PatientFragment();
+		this.getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, frag, PatientFragment.TAG).addToBackStack(PatientFragment.TAG).commit();
+	}
 }
