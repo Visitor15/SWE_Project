@@ -80,6 +80,26 @@ public class MedicalEncounter {
 			this.mPulse = mPulse;
 			this.mBreathsPerMinute = mBreathsPerMinute;
 		}
+
+		public double getTemperature() {
+			return mTemperature;
+		}
+
+		public double getSystolicPressure() {
+			return mSystolicPressure;
+		}
+
+		public double getDiastolicPressure() {
+			return mDiastolicPressure;
+		}
+
+		public int getPulse() {
+			return mPulse;
+		}
+
+		public int getBreathsPerMinute() {
+			return mBreathsPerMinute;
+		}
 	}
 }
 
