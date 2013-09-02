@@ -6,6 +6,7 @@
     android:layout_margin="8dip"
     android:background="@drawable/card_ui_selectable_background"
     android:orientation="vertical"
+    android:clickable="true"
     android:padding="4dip" >
 
     <com.mobile.nuesoft.ui.NuesoftTextView 
