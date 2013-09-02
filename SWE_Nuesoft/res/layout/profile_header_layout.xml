@@ -15,6 +15,7 @@
         android:padding="16dip" >
 
         <com.mobile.nuesoft.ui.NuesoftTextView
+            android:id="@+id/nt_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -24,6 +25,7 @@
             custom:textStyle="fonts/Roboto-Bold.ttf" />
 
         <com.mobile.nuesoft.ui.NuesoftTextView
+            android:id="@+id/nt_summary_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"

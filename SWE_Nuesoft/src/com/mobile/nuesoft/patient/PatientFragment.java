@@ -19,6 +19,7 @@ import android.widget.SlidingDrawer;
 import android.widget.TextView;
 
 import com.mobile.neusoft.adapters.GridViewAdapter;
+import com.mobile.nuesoft.Nuesoft;
 import com.mobile.nuesoft.NuesoftFragment;
 import com.mobile.nuesoft.R;
 import com.mobile.nuesoft.jobs.ParseCDADocumentJob;
@@ -39,6 +40,8 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 	private SlidingDrawer mDrawer;
 
 	private GridView mDrawerGridView;
+	
+	private TextView mPatientTitleName;
 	
 	private PatientObj mPatient;
 	
@@ -64,12 +67,12 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 
 	@Override
 	public void onFragmentPaused() {
-		onPatientUpdatedListener.unregister(getActivity());
+		onPatientUpdatedListener.unregister();
 	}
 
 	@Override
 	public void onFragmentResume() {
-		onPatientUpdatedListener.register(getActivity());
+		onPatientUpdatedListener.register();
 	}
 
 	@Override
@@ -93,6 +96,8 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 	public View onFragmentCreateView(LayoutInflater inflater,
 			ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.profile_frag_layout, null);
+		
+		mPatientTitleName = (TextView) v.findViewById(R.id.nt_name);
 
 		// Instantiate a ViewPager and a PagerAdapter.
 		mPager = (ViewPager) v.findViewById(R.id.pager);
@@ -168,13 +173,13 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 	}
 
 	public class OnPatientUpdatedListener extends NuesoftBroadcastReceiver {
-		void register(final Context c) {
+		void register() {
 			final IntentFilter filter = PatientUpdateEvent.createFilter();
-			registerLocalReceiver(c, this, filter);
+			registerLocalReceiver(Nuesoft.getReference(), this, filter);
 		}
 
-		void unregister(final Context c) {
-			unregisterLocalReciever(c, this);
+		void unregister() {
+			unregisterLocalReciever(Nuesoft.getReference(), this);
 		}
 
 		@Override
@@ -192,6 +197,8 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 				if(b.containsKey(ParseCDADocumentJob.IS_FINISHED_KEY)) {
 					if(!(b.getBoolean(ParseCDADocumentJob.IS_FINISHED_KEY))) {
 						Log.d(TAG, "GOT PATIENT: " + mPatient.toString());
+						
+						mPatientTitleName.setText(mPatient.getFIRST_NAME() + " " + mPatient.getLAST_NAME());
 						
 						return;
 					}
