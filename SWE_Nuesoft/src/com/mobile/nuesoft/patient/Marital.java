@@ -15,9 +15,7 @@ public class Marital {
 	}
 
 	public enum STATUS {
-		SINGLE("Single"),
-		DIVORCED("Divorced"),
-		MARRIED("Married");
+		SINGLE("Single"), DIVORCED("Divorced"), MARRIED("Married");
 
 		private String mTitle;
 
@@ -27,6 +25,18 @@ public class Marital {
 
 		public String getTitle() {
 			return mTitle;
+		}
+
+		public static STATUS fromTitle(final String title) {
+			STATUS[] l = STATUS.values();
+
+			for (int i = 0; i < l.length; i++) {
+				if (l[i].getTitle().equalsIgnoreCase(title)) {
+					return l[i];
+				}
+			}
+
+			return null;
 		}
 	}
 }

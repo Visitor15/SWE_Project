@@ -22,7 +22,8 @@ import com.mobile.nuesoft.patient.OnPatientObjUpdated;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
 import com.mobile.nuesoft.ui.NuesoftBroadcastReceiver;
 
-public class NavigationFragment extends NuesoftFragment  implements OnPatientObjUpdated {
+public class NavigationFragment extends NuesoftFragment implements
+        OnPatientObjUpdated {
 
 	public static final String TAG = "NavigationFragment";
 
@@ -43,12 +44,20 @@ public class NavigationFragment extends NuesoftFragment  implements OnPatientObj
 		HashMap<String, ArrayList<String>> data = new HashMap<String, ArrayList<String>>();
 		ArrayList<String> contentData = new ArrayList<String>();
 
-		contentData.addAll(Arrays.asList(getActivity().getResources().getStringArray(R.array.document_categories)));
-		data.put(getActivity().getResources().getString(R.string.current_referral), (ArrayList<String>) contentData.clone());
+		contentData.addAll(Arrays.asList(getActivity().getResources()
+		        .getStringArray(R.array.document_categories)));
+		data.put(
+		        getActivity().getResources().getString(
+		                R.string.current_referral),
+		        (ArrayList<String>) contentData.clone());
 
 		contentData = new ArrayList<String>();
-		contentData.addAll(Arrays.asList(getActivity().getResources().getStringArray(R.array.profile_categories)));
-		data.put(getActivity().getResources().getString(R.string.patient_records), (ArrayList<String>) contentData.clone());
+		contentData.addAll(Arrays.asList(getActivity().getResources()
+		        .getStringArray(R.array.profile_categories)));
+		data.put(
+		        getActivity().getResources()
+		                .getString(R.string.patient_records),
+		        (ArrayList<String>) contentData.clone());
 
 		mAdapter = new ListViewAdapter(getActivity(), data);
 	}
@@ -83,8 +92,9 @@ public class NavigationFragment extends NuesoftFragment  implements OnPatientObj
 
 	@Override
 	public View onFragmentCreateView(LayoutInflater inflater,
-			ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.navigation_frag_layout, container, false);
+	        ViewGroup container, Bundle savedInstanceState) {
+		View v = inflater.inflate(R.layout.navigation_frag_layout, container,
+		        false);
 
 		mTitleName = (TextView) v.findViewById(R.id.nt_title_text);
 		mListview = (ListView) v.findViewById(R.id.list_view);
@@ -117,12 +127,16 @@ public class NavigationFragment extends NuesoftFragment  implements OnPatientObj
 
 	@Override
 	public void onPatientObjUpdated(Bundle b) {
-		if(b != null) {
-			if(b.containsKey(PatientUpdateEvent.PATIENT_OBJ_KEY)) {
-				if(b.containsKey(ParseCDADocumentJob.IS_FINISHED_KEY)) {
-					if(!(b.getBoolean(ParseCDADocumentJob.IS_FINISHED_KEY))) {
-						PatientObj mPatient = (PatientObj) b.getSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY);
-						mTitleName.setText(mPatient.getFIRST_NAME() + " " + mPatient.getLAST_NAME());
+		if (b != null) {
+			if (b.containsKey(PatientUpdateEvent.PATIENT_OBJ_KEY)) {
+				if (b.containsKey(ParseCDADocumentJob.IS_FINISHED_KEY)) {
+					if ((b.getBoolean(ParseCDADocumentJob.IS_FINISHED_KEY))) {
+						PatientObj mPatient = (PatientObj) b
+						        .getSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY);
+						mTitleName.setText(mPatient.getIDENTIFIER()
+						        .getFIRST_NAME()
+						        + " "
+						        + mPatient.getIDENTIFIER().getLAST_NAME());
 						return;
 					}
 				}

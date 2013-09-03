@@ -22,10 +22,11 @@ import com.mobile.nuesoft.Nuesoft;
 import com.mobile.nuesoft.patient.Address;
 import com.mobile.nuesoft.patient.Gender;
 import com.mobile.nuesoft.patient.IdentifierBuilder;
+import com.mobile.nuesoft.patient.Language;
+import com.mobile.nuesoft.patient.Marital;
 import com.mobile.nuesoft.patient.MedicalEncounter;
 import com.mobile.nuesoft.patient.Medication;
 import com.mobile.nuesoft.patient.PatientBuilder;
-import com.mobile.nuesoft.patient.PatientBuilder.Language;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
 import com.mobile.nuesoft.patient.PatientTest;
 import com.mobile.nuesoft.patient.Telephone;
@@ -47,12 +48,16 @@ public class ParseCDADocumentJob extends
 	protected void onPostExecute(PatientObj result) {
 		super.onPostExecute(result);
 
-		updateBundle = new Bundle();
-		updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, true);
-		updateBundle
-		        .putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, result);
+		if (result != null) {
+			updateBundle = new Bundle();
+			updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, true);
+			updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY,
+			        result);
 
-		PatientUpdateEvent.broadcast(Nuesoft.getReference(), updateBundle);
+			Log.d(TAG, "On Post Execute for PATIENT: " + result);
+
+			PatientUpdateEvent.broadcast(Nuesoft.getReference(), updateBundle);
+		}
 	}
 
 	@Override
@@ -77,6 +82,8 @@ public class ParseCDADocumentJob extends
 	protected PatientObj doInBackground(String... docPath) {
 		long runningTime = 0;
 
+		PatientObj patientObj = null;
+
 		IdentifierBuilder patIdBuilder = new IdentifierBuilder();
 		List<Language> languages = new ArrayList<Language>();
 		List<MedicalEncounter> medicalEncounters = new ArrayList<MedicalEncounter>();
@@ -84,37 +91,11 @@ public class ParseCDADocumentJob extends
 		List<Medication> medicationPrevious = new ArrayList<Medication>();
 		List<PatientTest> tests = new ArrayList<PatientTest>();
 
-		// while(runningTime < 2000) {
-		// try {
-		// Thread.sleep(250);
-		// runningTime += 250;
-		//
-		// patBuilder.setEthnicGroup("White American");
-		// patBuilder.setFirstName("Nicholas");
-		// patBuilder.setLastName(new Integer(new Random().nextInt(999) +
-		// 1).toString());
-		// patBuilder.setGender(new Gender("Male", "00"));
-		// patBuilder.setLanguages(languages);
-		// patBuilder.setMaritalStatus(Marital.STATUS.SINGLE);
-		// patBuilder.setMedicalEncounters(medicalEncounters);
-		// patBuilder.setMedicationCurrent(medicationCurrent);
-		// patBuilder.setMedicationPrevious(medicationPrevious);
-		// patBuilder.setRace("American");
-		// patBuilder.setTests(tests);
-		// patBuilder.setId(patIdBuilder.build());
-		//
-		// this.onProgressUpdate(patBuilder.build());
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-
-		File f = new File("");
-
 		try {
-			parseDocument(new File(
+			patientObj = parseDocument(new File(
 			        "storage/sdcard0/Download/sample_cda_file.xml"));
+
+			Log.d(TAG, "GOT PATIENT: " + patientObj);
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -126,7 +107,7 @@ public class ParseCDADocumentJob extends
 			e.printStackTrace();
 		}
 
-		return null;
+		return patientObj;
 	}
 
 	private PatientObj parseDocument(final File mFile) throws SAXException,
@@ -187,6 +168,61 @@ public class ParseCDADocumentJob extends
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
 		dataNode = XMLParserUtil.getNode("birthTime", dataNode.getChildNodes());
 		patient.setBirthTime(XMLParserUtil.getNodeAttr("value", dataNode));
+
+		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("maritalStatusCode",
+		        dataNode.getChildNodes());
+		patient.setMaritalStatus(getMaritalStatus(dataNode));
+
+		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("religiousAffiliationCode",
+		        dataNode.getChildNodes());
+		patient.setReligion(XMLParserUtil.getNodeAttr("displayName", dataNode));
+
+		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("raceCode", dataNode.getChildNodes());
+		patient.setRace(XMLParserUtil.getNodeAttr("displayName", dataNode));
+
+		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("ethnicGroupCode",
+		        dataNode.getChildNodes());
+		patient.setEthnicGroup(XMLParserUtil.getNodeAttr("displayName",
+		        dataNode));
+
+		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("languageCommunication",
+		        dataNode.getChildNodes());
+		patient.setLanguages(getLanguagesFromNode(dataNode));
+
+		patient.setId(identifier.build());
+	}
+
+	private ArrayList<Language> getLanguagesFromNode(final Node node) {
+		ArrayList<Language> languages = new ArrayList<Language>();
+
+		for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+			Node lang = node.getChildNodes().item(i);
+			if (lang.getNodeName().equals("languageCommunication")) {
+				String data = XMLParserUtil.getNodeAttr("code", lang);
+
+				Language newLang = new Language(data);
+				languages.add(newLang);
+			}
+		}
+
+		return languages;
+	}
+
+	private Marital.STATUS getMaritalStatus(final Node node) {
+		Marital.STATUS status;
+
+		String statusStr = XMLParserUtil.getNodeAttr("displayName", node);
+
+		status = Marital.STATUS.fromTitle(statusStr);
+
+		Log.d(TAG, "GOT MARITAL STATUS: " + status);
+
+		return status;
 	}
 
 	private Gender getGenderFromNote(final Node node) {

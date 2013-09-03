@@ -292,34 +292,22 @@ public class PatientBuilder {
 		public String toString() {
 			String results = "";
 
-			results += "Name: " + this.getFIRST_NAME() + " "
-			        + this.getLAST_NAME() + "\n";
+			results += "Name: " + this.getIDENTIFIER().getFIRST_NAME() + " "
+			        + this.getIDENTIFIER().getLAST_NAME() + "\n";
 			results += "Gender: " + this.getGENDER().toString() + "\n";
 			results += "Marital Status: " + this.getMARITAL().getTitle() + "\n";
 			results += "Race: " + this.getRACE() + "\n";
 			results += "Religion: " + this.getRELIGION() + "\n";
 			results += "Ethnic Group: " + this.getETHNIC_GROUP() + "\n";
 			results += "# Langages: " + this.getLANGUAGES().size() + "\n";
-			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size()
-			        + "\n";
-			results += "# Meds Previous: "
-			        + this.getMEDICATION_PREVIOUS().size() + "\n";
-			results += "# Medical Events: "
-			        + this.getMEDICAL_ENCOUNTERS().size() + "\n";
+//			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size()
+//			        + "\n";
+//			results += "# Meds Previous: "
+//			        + this.getMEDICATION_PREVIOUS().size() + "\n";
+//			results += "# Medical Events: "
+//			        + this.getMEDICAL_ENCOUNTERS().size() + "\n";
 
 			return results;
-		}
-	}
-
-	public class Language {
-		private final String displayName;
-
-		public Language(final String name) {
-			this.displayName = name;
-		}
-
-		public String getDisplayName() {
-			return displayName;
 		}
 	}
 }

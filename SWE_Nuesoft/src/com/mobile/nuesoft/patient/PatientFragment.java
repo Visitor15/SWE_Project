@@ -26,7 +26,8 @@ import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
 import com.mobile.nuesoft.ui.ActiveReferralsFragment;
 import com.mobile.nuesoft.ui.NuesoftBroadcastReceiver;
 
-public class PatientFragment extends NuesoftFragment implements OnPatientObjUpdated {
+public class PatientFragment extends NuesoftFragment implements
+        OnPatientObjUpdated {
 
 	public static final String TAG = "PatientFragment";
 
@@ -36,29 +37,30 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 
 	private ScreenSlidePagerAdapter mPagerAdapter;
 
-//	private SlidingDrawer mDrawer;
-//
-//	private GridView mDrawerGridView;
-	
+	// private SlidingDrawer mDrawer;
+	//
+	// private GridView mDrawerGridView;
+
 	private TextView mPatientTitleName;
-	
+
 	private PatientObj mPatient;
-	
+
 	private ParseCDADocumentJob docParseJob;
-	
+
 	private boolean shouldParse = true;
-	
+
 	private String docPath = "mnt/sdcard0/download";
-	
+
 	private LinearLayout activeReferralContainer;
-	
+
 	private OnPatientUpdatedListener onPatientUpdatedListener = new OnPatientUpdatedListener();
 
-	public PatientFragment() {}
+	public PatientFragment() {
+	}
 
 	@Override
 	public void onFragmentCreated(Bundle savedInstanceState) {
-		if(docParseJob == null || shouldParse) {
+		if (docParseJob == null || shouldParse) {
 			docParseJob = new ParseCDADocumentJob();
 			docParseJob.execute(docPath);
 		}
@@ -93,17 +95,19 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 
 	@Override
 	public View onFragmentCreateView(LayoutInflater inflater,
-			ViewGroup container, Bundle savedInstanceState) {
+	        ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.profile_frag_layout, null);
-		
-		activeReferralContainer = (LinearLayout) v.findViewById(R.id.ll_active_referrals_container);
+
+		activeReferralContainer = (LinearLayout) v
+		        .findViewById(R.id.ll_active_referrals_container);
 		mPatientTitleName = (TextView) v.findViewById(R.id.nt_name);
 
 		// Instantiate a ViewPager and a PagerAdapter.
 		mPager = (ViewPager) v.findViewById(R.id.pager);
-		mPagerAdapter = new ScreenSlidePagerAdapter(getChildFragmentManager(), getActivity());
+		mPagerAdapter = new ScreenSlidePagerAdapter(getChildFragmentManager(),
+		        getActivity());
 		mPager.setAdapter(mPagerAdapter);
-		
+
 		initActiveReferralFragment();
 
 		return v;
@@ -114,36 +118,40 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	private void initActiveReferralFragment() {
-		this.getChildFragmentManager().beginTransaction().replace(R.id.ll_active_referrals_container, new ActiveReferralsFragment()).commit();
+		this.getChildFragmentManager()
+		        .beginTransaction()
+		        .replace(R.id.ll_active_referrals_container,
+		                new ActiveReferralsFragment()).commit();
 	}
 
-//	private void initDrawer() {
-//		mDrawerGridView.setAdapter(new GridViewAdapter(getActivity().getApplicationContext()));
-//	}
+	// private void initDrawer() {
+	// mDrawerGridView.setAdapter(new
+	// GridViewAdapter(getActivity().getApplicationContext()));
+	// }
 
 	/**
-	 * A simple pager adapter that represents 5 ScreenSlidePageFragment objects, in
-	 * sequence.
+	 * A simple pager adapter that represents 5 ScreenSlidePageFragment objects,
+	 * in sequence.
 	 */
 	private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
 		private ArrayList<Fragment> dataList = new ArrayList<Fragment>();
-		
-		
 
 		private ArrayList<String> categoryList = new ArrayList<String>();
 
 		public ScreenSlidePagerAdapter(final FragmentManager fm, final Context c) {
 			super(fm);
-			categoryList.add(c.getResources().getString(R.string.patient_summary));
+			categoryList.add(c.getResources().getString(
+			        R.string.patient_summary));
 
-			String[] tempList = c.getResources().getStringArray(R.array.profile_categories);
-			for(String s : tempList) {
+			String[] tempList = c.getResources().getStringArray(
+			        R.array.profile_categories);
+			for (String s : tempList) {
 				categoryList.add(s);
 			}
-			
+
 			dataList.add(new SummaryFragment());
 			dataList.add(new ScreenSlidePageFragment("Allergies"));
 			dataList.add(new MedicationFragment());
@@ -172,9 +180,9 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
+		        Bundle savedInstanceState) {
 			ViewGroup rootView = (ViewGroup) inflater.inflate(
-					R.layout.profile_card_layout, container, false);
+			        R.layout.profile_card_layout, container, false);
 
 			((TextView) rootView.findViewById(R.id.nt_title)).setText(mTitle);
 
@@ -200,16 +208,18 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 
 	@Override
 	public void onPatientObjUpdated(Bundle b) {
-		if(b != null) {
-			if(b.containsKey(PatientUpdateEvent.PATIENT_OBJ_KEY)) {
-				mPatient = (PatientObj) b.getSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY);
-				
-				if(b.containsKey(ParseCDADocumentJob.IS_FINISHED_KEY)) {
-					if(!(b.getBoolean(ParseCDADocumentJob.IS_FINISHED_KEY))) {
+		if (b != null) {
+			if (b.containsKey(PatientUpdateEvent.PATIENT_OBJ_KEY)) {
+				mPatient = (PatientObj) b
+				        .getSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY);
+
+				if (b.containsKey(ParseCDADocumentJob.IS_FINISHED_KEY)) {
+					if ((b.getBoolean(ParseCDADocumentJob.IS_FINISHED_KEY))) {
 						Log.d(TAG, "GOT PATIENT: " + mPatient.toString());
-						
-						mPatientTitleName.setText(mPatient.getFIRST_NAME() + " " + mPatient.getLAST_NAME());
-						
+
+						mPatientTitleName.setText(mPatient.getIDENTIFIER().getFIRST_NAME()
+						        + " " + mPatient.getIDENTIFIER().getLAST_NAME());
+
 						return;
 					}
 				}
