@@ -26,11 +26,12 @@
                 layout="@layout/profile_header_layout"
                 android:padding="4dip" />
 
-            <include
+            <LinearLayout
+                android:id="@+id/ll_active_referrals_container"
                 android:layout_width="match_parent"
                 android:layout_height="48dip"
                 android:layout_alignParentTop="true"
-                layout="@layout/active_referral_layout" />
+                android:orientation="vertical" />
         </RelativeLayout>
 
         <android.support.v4.view.ViewPager

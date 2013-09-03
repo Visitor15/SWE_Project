@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.mobile.nuesoft.Nuesoft;
@@ -22,6 +23,7 @@ import com.mobile.nuesoft.R;
 import com.mobile.nuesoft.jobs.ParseCDADocumentJob;
 import com.mobile.nuesoft.jobs.PatientUpdateEvent;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
+import com.mobile.nuesoft.ui.ActiveReferralsFragment;
 import com.mobile.nuesoft.ui.NuesoftBroadcastReceiver;
 
 public class PatientFragment extends NuesoftFragment implements OnPatientObjUpdated {
@@ -47,6 +49,8 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 	private boolean shouldParse = true;
 	
 	private String docPath = "mnt/sdcard0/download";
+	
+	private LinearLayout activeReferralContainer;
 	
 	private OnPatientUpdatedListener onPatientUpdatedListener = new OnPatientUpdatedListener();
 
@@ -92,16 +96,15 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 			ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.profile_frag_layout, null);
 		
+		activeReferralContainer = (LinearLayout) v.findViewById(R.id.ll_active_referrals_container);
 		mPatientTitleName = (TextView) v.findViewById(R.id.nt_name);
 
 		// Instantiate a ViewPager and a PagerAdapter.
 		mPager = (ViewPager) v.findViewById(R.id.pager);
 		mPagerAdapter = new ScreenSlidePagerAdapter(getChildFragmentManager(), getActivity());
 		mPager.setAdapter(mPagerAdapter);
-
-//		mDrawer = (SlidingDrawer) v.findViewById(R.id.drawer);
-//		mDrawerGridView = (GridView) mDrawer.findViewById(R.id.content);
-//		initDrawer();
+		
+		initActiveReferralFragment();
 
 		return v;
 	}
@@ -110,6 +113,10 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 	public void onFragmentViewCreated(View v, Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	private void initActiveReferralFragment() {
+		this.getChildFragmentManager().beginTransaction().replace(R.id.ll_active_referrals_container, new ActiveReferralsFragment()).commit();
 	}
 
 //	private void initDrawer() {
