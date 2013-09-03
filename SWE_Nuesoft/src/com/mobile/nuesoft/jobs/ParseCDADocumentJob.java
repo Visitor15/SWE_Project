@@ -123,11 +123,17 @@ public class ParseCDADocumentJob extends
 		        root.getChildNodes());
 
 		parsePatientGeneralInfo(record, patBuilder);
+		parsePatientAllergiesFromNode(record, patBuilder);
+		parsePatientMedicationsFromNode(record, patBuilder);
 
 		return patBuilder.build();
 	}
 	
-	private void parsePatientAllergies(final Node root, final PatientBuilder patient) {
+	private void parsePatientAllergiesFromNode(final Node root, final PatientBuilder patient) {
+		
+	}
+	
+	private void parsePatientMedicationsFromNode(final Node root, final PatientBuilder patient) {
 		
 	}
 
