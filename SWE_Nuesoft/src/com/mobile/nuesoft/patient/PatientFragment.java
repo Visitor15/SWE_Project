@@ -14,11 +14,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridView;
-import android.widget.SlidingDrawer;
 import android.widget.TextView;
 
-import com.mobile.neusoft.adapters.GridViewAdapter;
 import com.mobile.nuesoft.Nuesoft;
 import com.mobile.nuesoft.NuesoftFragment;
 import com.mobile.nuesoft.R;
@@ -37,9 +34,9 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 
 	private ScreenSlidePagerAdapter mPagerAdapter;
 
-	private SlidingDrawer mDrawer;
-
-	private GridView mDrawerGridView;
+//	private SlidingDrawer mDrawer;
+//
+//	private GridView mDrawerGridView;
 	
 	private TextView mPatientTitleName;
 	
@@ -53,9 +50,7 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 	
 	private OnPatientUpdatedListener onPatientUpdatedListener = new OnPatientUpdatedListener();
 
-	public PatientFragment() {
-
-	}
+	public PatientFragment() {}
 
 	@Override
 	public void onFragmentCreated(Bundle savedInstanceState) {
@@ -104,9 +99,9 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 		mPagerAdapter = new ScreenSlidePagerAdapter(getChildFragmentManager(), getActivity());
 		mPager.setAdapter(mPagerAdapter);
 
-		mDrawer = (SlidingDrawer) v.findViewById(R.id.drawer);
-		mDrawerGridView = (GridView) mDrawer.findViewById(R.id.content);
-		initDrawer();
+//		mDrawer = (SlidingDrawer) v.findViewById(R.id.drawer);
+//		mDrawerGridView = (GridView) mDrawer.findViewById(R.id.content);
+//		initDrawer();
 
 		return v;
 	}
@@ -117,9 +112,9 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 
 	}
 
-	private void initDrawer() {
-		mDrawerGridView.setAdapter(new GridViewAdapter(getActivity().getApplicationContext()));
-	}
+//	private void initDrawer() {
+//		mDrawerGridView.setAdapter(new GridViewAdapter(getActivity().getApplicationContext()));
+//	}
 
 	/**
 	 * A simple pager adapter that represents 5 ScreenSlidePageFragment objects, in
@@ -128,6 +123,8 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 	private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
 		private ArrayList<Fragment> dataList = new ArrayList<Fragment>();
+		
+		
 
 		private ArrayList<String> categoryList = new ArrayList<String>();
 
@@ -139,16 +136,22 @@ public class PatientFragment extends NuesoftFragment implements OnPatientObjUpda
 			for(String s : tempList) {
 				categoryList.add(s);
 			}
+			
+			dataList.add(new SummaryFragment());
+			dataList.add(new ScreenSlidePageFragment("Allergies"));
+			dataList.add(new MedicationFragment());
+			dataList.add(new ScreenSlidePageFragment("Family History"));
+			dataList.add(new ScreenSlidePageFragment("Patient History"));
 		}
 
 		@Override
 		public Fragment getItem(int position) {
-			return new ScreenSlidePageFragment(categoryList.get(position));
+			return dataList.get(position);
 		}
 
 		@Override
 		public int getCount() {
-			return categoryList.size();
+			return dataList.size();
 		}
 	}
 

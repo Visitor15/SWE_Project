@@ -9,23 +9,29 @@
         android:layout_height="match_parent"
         android:orientation="vertical" >
 
-        <include
+        <RelativeLayout
+            android:id="@+id/rl_header_container"
             android:layout_width="match_parent"
             android:layout_height="0dip"
-            android:layout_weight=".10"
-            layout="@layout/active_referral_footer_layout" />
+            android:layout_weight="0.45" >
 
-        <include
-            android:id="@+id/header"
-            android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:layout_marginBottom="4dip"
-            android:layout_marginLeft="8dip"
-            android:layout_marginRight="8dip"
-            android:layout_marginTop="8dip"
-            android:layout_weight=".45"
-            layout="@layout/profile_header_layout"
-            android:padding="4dip" />
+            <include
+                android:id="@+id/header"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="4dip"
+                android:layout_marginLeft="8dip"
+                android:layout_marginRight="8dip"
+                android:layout_marginTop="8dip"
+                layout="@layout/profile_header_layout"
+                android:padding="4dip" />
+
+            <include
+                android:layout_width="match_parent"
+                android:layout_height="48dip"
+                android:layout_alignParentTop="true"
+                layout="@layout/active_referral_layout" />
+        </RelativeLayout>
 
         <android.support.v4.view.ViewPager
             android:id="@+id/pager"
@@ -38,7 +44,8 @@
             android:layout_weight="1" />
     </LinearLayout>
 
-    <com.mobile.nuesoft.ui.NuesoftSlidingDrawer
+    <!--
+         <com.mobile.nuesoft.ui.NuesoftSlidingDrawer
         android:id="@+id/drawer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -60,5 +67,6 @@
             android:background="#88282828"
             android:numColumns="auto_fit" />
     </com.mobile.nuesoft.ui.NuesoftSlidingDrawer>
+    -->
 
 </RelativeLayout>

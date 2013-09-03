@@ -20,20 +20,20 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Patient&apos;s Name"
-            android:textColor="#282828"
+            android:textColor="#AA282828"
             android:textSize="24sp"
             custom:textStyle="fonts/Roboto-Bold.ttf" />
 
-        <com.mobile.nuesoft.ui.NuesoftTextView
+<!--         <com.mobile.nuesoft.ui.NuesoftTextView
             android:id="@+id/nt_summary_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:padding="2dip"
             android:text="SSN: 555-55-5555"
-            android:textColor="#282828"
+            android:textColor="#AA282828"
             android:textSize="18sp"
-            custom:textStyle="fonts/Roboto-Thin.ttf" />
+            custom:textStyle="fonts/Roboto-Thin.ttf" /> -->
     </LinearLayout>
 
     <RelativeLayout

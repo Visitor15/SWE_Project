@@ -15,5 +15,7 @@
 	<string name="reason_for_visit">Reason for visit</string>
 	<string name="current_referral">Current Referral</string>
 	<string name="patient_records">Patient Records</string>
+	<string name="patient_history">Patient History</string>
+	<string name="previous_referrals">Previous Referrals</string>
     
 </resources>

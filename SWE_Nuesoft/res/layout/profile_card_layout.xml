@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:textSize="26sp"
-        android:textColor="#282828"
+        android:textColor="#AA282828"
         custom:textStyle="fonts/Roboto-Thin.ttf"/>
 
 </RelativeLayout>
