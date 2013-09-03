@@ -131,39 +131,15 @@ public class ParseCDADocumentJob extends
 
 	private PatientObj parseDocument(final File mFile) throws SAXException,
 	        IOException, ParserConfigurationException {
-
 		PatientBuilder patBuilder = new PatientBuilder();
-		IdentifierBuilder idBuilder = new IdentifierBuilder();
-
-		Log.d(TAG, "FILE EXIST: " + mFile.exists());
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(mFile);
 
 		NodeList rootList = doc.getElementsByTagName("ClinicalDocument");
-
 		Node root = XMLParserUtil.getNode("ClinicalDocument", rootList);
-
-		Log.d(TAG, "ROOT LENGTH: " + root.getChildNodes().getLength());
-
 		Node record = XMLParserUtil.getNode("recordTarget",
 		        root.getChildNodes());
-
-		// Log.d(TAG, "RECORD NODE IS: " + record.getChildNodes().getLength());
-		//
-		// Node patient = XMLParserUtil.getNode("patientRole",
-		// record.getChildNodes());
-		//
-		// Log.d(TAG, "PATIENT NODE IS: " +
-		// patient.getChildNodes().getLength());
-		//
-		// String SSN = XMLParserUtil.getNodeAttr("extension",
-		// XMLParserUtil.getNode("id", patient.getChildNodes()));
-		//
-		// Log.d(TAG, "GOT SSN: " + SSN);
-
-		// idBuilder.setSsn(SSN);
-		// patBuilder.setId(idBuilder.build());
 
 		parsePatientGeneralInfo(record, patBuilder);
 
@@ -192,38 +168,39 @@ public class ParseCDADocumentJob extends
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
 		dataNode = XMLParserUtil.getNode("name", dataNode.getChildNodes());
 		data = XMLParserUtil.getNodeValue("given", dataNode.getChildNodes());
-		
+
 		Log.d(TAG, "GOT FIRST NAME: " + data);
-		
+
 		identifier.setFirstName(data);
 		data = XMLParserUtil.getNodeValue("family", dataNode.getChildNodes());
-		
+
 		Log.d(TAG, "GOT LAST NAME: " + data);
-		
+
 		identifier.setLastName(data);
 		identifier.setEmail("N/A");
-		
+
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
-		dataNode = XMLParserUtil.getNode("administrativeGenderCode", dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("administrativeGenderCode",
+		        dataNode.getChildNodes());
 		patient.setGender(getGenderFromNote(dataNode));
-		
+
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
 		dataNode = XMLParserUtil.getNode("birthTime", dataNode.getChildNodes());
 		patient.setBirthTime(XMLParserUtil.getNodeAttr("value", dataNode));
 	}
-	
+
 	private Gender getGenderFromNote(final Node node) {
 		Gender mGender;
 		String genderCode;
 		String gender;
-		
+
 		genderCode = XMLParserUtil.getNodeAttr("code", node);
 		gender = XMLParserUtil.getNodeAttr("displayName", node);
-		
+
 		mGender = new Gender(gender, genderCode);
-		
+
 		Log.d(TAG, "GOT GENDER: " + mGender.toString());
-		
+
 		return mGender;
 	}
 
