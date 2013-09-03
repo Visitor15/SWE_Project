@@ -126,6 +126,10 @@ public class ParseCDADocumentJob extends
 
 		return patBuilder.build();
 	}
+	
+	private void parsePatientAllergies(final Node root, final PatientBuilder patient) {
+		
+	}
 
 	private void parsePatientGeneralInfo(final Node root,
 	        final PatientBuilder patient) {

@@ -172,6 +172,7 @@ public class PatientBuilder {
 		private final Address ADDRESS;
 
 		private ArrayList<Language> LANGUAGES;
+		private ArrayList<Allergy> ALLERGIES;
 		private ArrayList<Medication> MEDICATION_CURRENT;
 		private ArrayList<Medication> MEDICATION_PREVIOUS;
 		private ArrayList<MedicalEncounter> MEDICAL_ENCOUNTERS;
@@ -223,6 +224,14 @@ public class PatientBuilder {
 
 		public Address getADDRESS() {
 			return ADDRESS;
+		}
+		
+		public ArrayList<Allergy> getALLERGIES() {
+			return ALLERGIES;
+		}
+
+		public void setALLERGIES(ArrayList<Allergy> aLLERGIES) {
+			ALLERGIES = aLLERGIES;
 		}
 
 		public ArrayList<Medication> getMEDICATION_CURRENT() {
