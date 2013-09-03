@@ -5,7 +5,7 @@ public class IdentifierBuilder {
 	private String firstName;
 	private String lastName;
 	private String ssn;
-	private String address;
+	private Address address;
 	private Telephone tel;
 	private String email;
 
@@ -35,11 +35,11 @@ public class IdentifierBuilder {
 		this.ssn = ssn;
 	}
 
-	public String getAddress() {
+	public Address getAddress() {
 		return address;
 	}
 
-	public void setAddress(String address) {
+	public void setAddress(Address address) {
 		this.address = address;
 	}
 
@@ -47,8 +47,8 @@ public class IdentifierBuilder {
 		return tel;
 	}
 
-	public void setTel(final String areaCode, final String firstPart, final String secondPart) {
-		this.tel = new Telephone(areaCode, firstPart, secondPart);
+	public void setTel(final Telephone phone) {
+		this.tel = phone;
 	}
 
 	public void setEmail(final String email) {
@@ -69,11 +69,11 @@ public class IdentifierBuilder {
 		private final String FIRST_NAME;
 		private final String LAST_NAME;
 		private final String SSN;
-		private final String ADDRESS;
+		private final Address ADDRESS;
 		private final Telephone PHONE_MOBILE;
 		private final String EMAIL;
 
-		private PatientIdentifier(final String FIRST_NAME, final String LAST_NAME, final String SSN, final String ADDRESS, final Telephone PHONE_MOBILE, final String EMAIL) {
+		private PatientIdentifier(final String FIRST_NAME, final String LAST_NAME, final String SSN, final Address ADDRESS, final Telephone PHONE_MOBILE, final String EMAIL) {
 			this.FIRST_NAME = FIRST_NAME;
 			this.LAST_NAME = LAST_NAME;
 			this.SSN = SSN;
@@ -94,7 +94,7 @@ public class IdentifierBuilder {
 			return SSN;
 		}
 
-		public String getADDRESS() {
+		public Address getADDRESS() {
 			return ADDRESS;
 		}
 
@@ -104,29 +104,6 @@ public class IdentifierBuilder {
 
 		public String getEMAIL() {
 			return EMAIL;
-		}
-	}
-
-	private class Telephone {
-		private String AREA_CODE;
-		private String FIRST_PART;
-		private String SECOND_PART;
-
-		public Telephone() {
-			AREA_CODE = "000";
-			FIRST_PART = "000";
-			SECOND_PART = "0000";
-		}
-
-		public Telephone(final String areaCode, final String firstPart, final String secondPart) {
-			this.AREA_CODE = areaCode;
-			this.FIRST_PART = firstPart;
-			this.SECOND_PART = secondPart;
-		}
-
-		@Override
-		public String toString() {
-			return "(" + AREA_CODE + ")" + "-" + FIRST_PART + "-" + SECOND_PART;
 		}
 	}
 }

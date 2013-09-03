@@ -4,35 +4,35 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 
 import com.mobile.nuesoft.Nuesoft;
+import com.mobile.nuesoft.patient.Address;
 import com.mobile.nuesoft.patient.Gender;
 import com.mobile.nuesoft.patient.IdentifierBuilder;
-import com.mobile.nuesoft.patient.Marital;
 import com.mobile.nuesoft.patient.MedicalEncounter;
 import com.mobile.nuesoft.patient.Medication;
 import com.mobile.nuesoft.patient.PatientBuilder;
 import com.mobile.nuesoft.patient.PatientBuilder.Language;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
 import com.mobile.nuesoft.patient.PatientTest;
+import com.mobile.nuesoft.patient.Telephone;
+import com.mobile.nuesoft.util.XMLParserUtil;
 
-public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientObj> {
+public class ParseCDADocumentJob extends
+        AsyncTask<String, PatientObj, PatientObj> {
 
 	public static final String TAG = "ParseCDADocumentJob";
 
@@ -40,7 +40,8 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 	private Bundle updateBundle;
 
-	public ParseCDADocumentJob() {}
+	public ParseCDADocumentJob() {
+	}
 
 	@Override
 	protected void onPostExecute(PatientObj result) {
@@ -48,9 +49,10 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		updateBundle = new Bundle();
 		updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, true);
-		updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, result);
+		updateBundle
+		        .putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, result);
 
-		PatientUpdateEvent.broadcast(Nuesoft.getReference(),  updateBundle);
+		PatientUpdateEvent.broadcast(Nuesoft.getReference(), updateBundle);
 	}
 
 	@Override
@@ -65,7 +67,8 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		updateBundle = new Bundle();
 		updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, false);
-		updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, updatedPatient);
+		updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY,
+		        updatedPatient);
 
 		PatientUpdateEvent.broadcast(Nuesoft.getReference(), updateBundle);
 	}
@@ -74,7 +77,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	protected PatientObj doInBackground(String... docPath) {
 		long runningTime = 0;
 
-		PatientBuilder patBuilder = new PatientBuilder();
 		IdentifierBuilder patIdBuilder = new IdentifierBuilder();
 		List<Language> languages = new ArrayList<Language>();
 		List<MedicalEncounter> medicalEncounters = new ArrayList<MedicalEncounter>();
@@ -82,37 +84,37 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		List<Medication> medicationPrevious = new ArrayList<Medication>();
 		List<PatientTest> tests = new ArrayList<PatientTest>();
 
-		//		while(runningTime < 2000) {
-		//			try {
-		//				Thread.sleep(250);
-		//				runningTime += 250;
+		// while(runningTime < 2000) {
+		// try {
+		// Thread.sleep(250);
+		// runningTime += 250;
 		//
-		//				patBuilder.setEthnicGroup("White American");
-		//				patBuilder.setFirstName("Nicholas");
-		//				patBuilder.setLastName(new Integer(new Random().nextInt(999) + 1).toString());
-		//				patBuilder.setGender(new Gender("Male", "00"));
-		//				patBuilder.setLanguages(languages);
-		//				patBuilder.setMaritalStatus(Marital.STATUS.SINGLE);
-		//				patBuilder.setMedicalEncounters(medicalEncounters);
-		//				patBuilder.setMedicationCurrent(medicationCurrent);
-		//				patBuilder.setMedicationPrevious(medicationPrevious);
-		//				patBuilder.setRace("American");
-		//				patBuilder.setTests(tests);
-		//				patBuilder.setId(patIdBuilder.build());
+		// patBuilder.setEthnicGroup("White American");
+		// patBuilder.setFirstName("Nicholas");
+		// patBuilder.setLastName(new Integer(new Random().nextInt(999) +
+		// 1).toString());
+		// patBuilder.setGender(new Gender("Male", "00"));
+		// patBuilder.setLanguages(languages);
+		// patBuilder.setMaritalStatus(Marital.STATUS.SINGLE);
+		// patBuilder.setMedicalEncounters(medicalEncounters);
+		// patBuilder.setMedicationCurrent(medicationCurrent);
+		// patBuilder.setMedicationPrevious(medicationPrevious);
+		// patBuilder.setRace("American");
+		// patBuilder.setTests(tests);
+		// patBuilder.setId(patIdBuilder.build());
 		//
-		//				this.onProgressUpdate(patBuilder.build());
-		//			} catch (InterruptedException e) {
-		//				// TODO Auto-generated catch block
-		//				e.printStackTrace();
-		//			}
-		//		}
-
-
+		// this.onProgressUpdate(patBuilder.build());
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
 
 		File f = new File("");
 
 		try {
-			parseDocument(new File("storage/sdcard0/Download/sample_cda_file.xml"));
+			parseDocument(new File(
+			        "storage/sdcard0/Download/sample_cda_file.xml"));
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -127,70 +129,143 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		return null;
 	}
 
-	private void parseDocument(final File mFile) throws SAXException, IOException, ParserConfigurationException {
+	private PatientObj parseDocument(final File mFile) throws SAXException,
+	        IOException, ParserConfigurationException {
+
+		PatientBuilder patBuilder = new PatientBuilder();
+		IdentifierBuilder idBuilder = new IdentifierBuilder();
 
 		Log.d(TAG, "FILE EXIST: " + mFile.exists());
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(mFile);
 
-		Log.d(TAG, "NCC - DOC: " + doc.getElementsByTagName("recordTarget").getLength());
+		NodeList rootList = doc.getElementsByTagName("ClinicalDocument");
 
-		doc.getDocumentElement().normalize();
+		Node root = XMLParserUtil.getNode("ClinicalDocument", rootList);
 
-		Log.d(TAG, "THINGS: " + doc.getChildNodes());
+		Log.d(TAG, "ROOT LENGTH: " + root.getChildNodes().getLength());
 
-		printNodes(doc.getChildNodes());
+		Node record = XMLParserUtil.getNode("recordTarget",
+		        root.getChildNodes());
 
-		NodeList nList = doc.getElementsByTagName("recordTarget");
+		// Log.d(TAG, "RECORD NODE IS: " + record.getChildNodes().getLength());
+		//
+		// Node patient = XMLParserUtil.getNode("patientRole",
+		// record.getChildNodes());
+		//
+		// Log.d(TAG, "PATIENT NODE IS: " +
+		// patient.getChildNodes().getLength());
+		//
+		// String SSN = XMLParserUtil.getNodeAttr("extension",
+		// XMLParserUtil.getNode("id", patient.getChildNodes()));
+		//
+		// Log.d(TAG, "GOT SSN: " + SSN);
 
-		for(int i = 0; i < nList.getLength(); i++) {
-			Node node = nList.item(i);
-			Log.d(TAG, "NODE: " + node.getNodeName() + " TYPE: " + node.getNodeType());
+		// idBuilder.setSsn(SSN);
+		// patBuilder.setId(idBuilder.build());
 
-			NodeList children = node.getChildNodes();
-			for(int j = 0; j < children.getLength(); j++) {
-				Log.d(TAG, "NODE 2: " + children.item(i).getLocalName());
-			}
-		}
+		parsePatientGeneralInfo(record, patBuilder);
+
+		return patBuilder.build();
 	}
 
-	private void printNodes(final NodeList nodeList) {
-		ArrayList<String> attrNames = new ArrayList<String>();
-		for(int i = 0; i < nodeList.getLength(); i++) {
-			Node tempNode = nodeList.item(i);
-			//			Log.d(TAG, tempNode.getNodeName() + " HAS ATTR: " + tempNode.hasAttributes());
-			if (tempNode.getNodeName().equalsIgnoreCase("recordTarget")) {
-				// get attributes names and values
-//				NamedNodeMap nodeMap = tempNode.getAttributes();
-				Log.d(TAG, "attr name : " + tempNode.getNodeName());
-				Log.d(TAG, "attr value : " + tempNode.getNodeValue());
-				Log.d(TAG, "has child nodes: : " + tempNode.hasChildNodes());
+	private void parsePatientGeneralInfo(final Node root,
+	        final PatientBuilder patient) {
+		IdentifierBuilder identifier = new IdentifierBuilder();
+		Node node = XMLParserUtil.getNode("patientRole", root.getChildNodes());
+		Node dataNode = null;
 
-				if(tempNode.hasChildNodes()) {
-					NodeList children = tempNode.getChildNodes();
+		String data = "";
 
-					for (int j = 0; j < children.getLength(); j++) {
-						Node node = children.item(j);
-						Log.d(TAG, "CHILD NODE: " + node.getNodeName());
-						Log.d(TAG, "CHILD NODE ATTR: " + node.hasAttributes());
-						if(node.getNodeName().equals("patientRole")) {
-							NodeList children2 = node.getChildNodes();
-							
-							for(int k = 0; k < children2.getLength(); k++) {
-								Node m = children2.item(k);
-								Log.d(TAG, "attr value : " + m.getNodeName());
-								Log.d(TAG, "attr value : " + m.getNodeValue());
-							}
-						}
-					}
-				}
-			}
-			if (tempNode.hasChildNodes()) {
-				//				loop again if has child nodes
-				printNodes(tempNode.getChildNodes());
-			}
-		}
+		// Finding the id node
+		dataNode = XMLParserUtil.getNode("id", node.getChildNodes());
+		data = XMLParserUtil.getNodeAttr("extension", dataNode);
+		identifier.setSsn(data);
+
+		dataNode = XMLParserUtil.getNode("addr", node.getChildNodes());
+		identifier.setAddress(getAddressFromNode(dataNode));
+
+		dataNode = XMLParserUtil.getNode("telecom", node.getChildNodes());
+		identifier.setTel(getTelephoneFromNode(dataNode));
+
+		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("name", dataNode.getChildNodes());
+		data = XMLParserUtil.getNodeValue("given", dataNode.getChildNodes());
+		
+		Log.d(TAG, "GOT FIRST NAME: " + data);
+		
+		identifier.setFirstName(data);
+		data = XMLParserUtil.getNodeValue("family", dataNode.getChildNodes());
+		
+		Log.d(TAG, "GOT LAST NAME: " + data);
+		
+		identifier.setLastName(data);
+		identifier.setEmail("N/A");
+		
+		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("administrativeGenderCode", dataNode.getChildNodes());
+		patient.setGender(getGenderFromNote(dataNode));
+		
+		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("birthTime", dataNode.getChildNodes());
+		patient.setBirthTime(XMLParserUtil.getNodeAttr("value", dataNode));
+	}
+	
+	private Gender getGenderFromNote(final Node node) {
+		Gender mGender;
+		String genderCode;
+		String gender;
+		
+		genderCode = XMLParserUtil.getNodeAttr("code", node);
+		gender = XMLParserUtil.getNodeAttr("displayName", node);
+		
+		mGender = new Gender(gender, genderCode);
+		
+		Log.d(TAG, "GOT GENDER: " + mGender.toString());
+		
+		return mGender;
 	}
 
+	private Address getAddressFromNode(final Node addrNode) {
+		String street = "";
+		String city = "";
+		String state = "";
+		String postal = "";
+		String country = "";
+
+		street = XMLParserUtil.getNodeValue("streetAddressLine",
+		        addrNode.getChildNodes());
+		city = XMLParserUtil.getNodeValue("city", addrNode.getChildNodes());
+		state = XMLParserUtil.getNodeValue("state", addrNode.getChildNodes());
+		postal = XMLParserUtil.getNodeValue("postalCode",
+		        addrNode.getChildNodes());
+		country = XMLParserUtil.getNodeValue("country",
+		        addrNode.getChildNodes());
+
+		Address addr = new Address(street, city, state, postal, country);
+
+		Log.d(TAG, "GOT ADDRESS: " + addr);
+
+		return addr;
+	}
+
+	private Telephone getTelephoneFromNode(final Node telNode) {
+		String areaCode = "";
+		String firstPart = "";
+		String secondPart = "";
+
+		String data = XMLParserUtil.getNodeAttr("value", telNode);
+
+		areaCode = data.substring(data.indexOf("+") + 3, data.lastIndexOf(")"));
+		firstPart = data.substring(data.lastIndexOf(")") + 1,
+		        data.lastIndexOf(")") + 4);
+		secondPart = data.substring(data.length() - 4);
+
+		Telephone phone = new Telephone(areaCode, firstPart, secondPart);
+
+		Log.d(TAG, "GOT TELELPHONE: " + phone.toString());
+
+		return phone;
+	}
 }
