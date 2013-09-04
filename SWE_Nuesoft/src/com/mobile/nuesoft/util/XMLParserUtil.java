@@ -1,5 +1,7 @@
 package com.mobile.nuesoft.util;
 
+import java.util.ArrayList;
+
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -74,5 +76,40 @@ public class XMLParserUtil {
 		}
 
 		return "";
+	}
+
+	public static ArrayList<Node> getComponentNodesFromBody(final Node root) {
+		ArrayList<Node> list = new ArrayList<Node>();
+		NodeList rootChildList = root.getChildNodes();
+
+		for (int i = 0; i < rootChildList.getLength(); i++) {
+			Node n = rootChildList.item(i);
+			if (n.getNodeName().equals("component")) {
+				list.add(n);
+			}
+		}
+
+		return list;
+	}
+
+	public static Node getCDADocumentBodySection(final Node root) {
+		NodeList rootList = root.getChildNodes();
+
+		for (int i = 0; i < rootList.getLength(); i++) {
+			Node n1 = rootList.item(i);
+			if (n1.getNodeName().equals("component")) {
+				if (n1.hasChildNodes()) {
+					NodeList n1_children = n1.getChildNodes();
+					for (int j = 0; j < n1_children.getLength(); j++) {
+						Node n2 = n1_children.item(j);
+						if (n2.getNodeName().equals("structuredBody")) {
+							return n2;
+						}
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 }

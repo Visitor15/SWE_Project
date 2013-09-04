@@ -17,11 +17,13 @@ public class PatientBuilder {
 	private String religion;
 	private String ethnicGroup;
 	private Marital.STATUS maritalStatus;
-	private ArrayList<Language> languages;
-	private ArrayList<Medication> medicationCurrent;
-	private ArrayList<Medication> medicationPrevious;
-	private ArrayList<MedicalEncounter> medicalEncounters;
-	private ArrayList<PatientTest> tests;
+	private ArrayList<Language> languages = new ArrayList<Language>();
+	private ArrayList<Medication> medicationCurrent = new ArrayList<Medication>();
+	private ArrayList<Medication> medicationPrevious = new ArrayList<Medication>();
+	private ArrayList<MedicalEncounter> medicalEncounters = new ArrayList<MedicalEncounter>();
+	private ArrayList<Allergy> allergies = new ArrayList<Allergy>();
+
+	private ArrayList<PatientTest> tests = new ArrayList<PatientTest>();
 
 	public PatientBuilder() {
 	}
@@ -57,6 +59,18 @@ public class PatientBuilder {
 	public void setMaritalStatus(Marital.STATUS maritalStatus) {
 		this.maritalStatus = maritalStatus;
 	}
+	
+	public ArrayList<Allergy> getAllergies() {
+		return allergies;
+	}
+	
+	public void addAllergy(final Allergy allergy) {
+		this.allergies.add(allergy);
+	}
+
+	public void setAllergies(ArrayList<Allergy> allergies) {
+		this.allergies = allergies;
+	}
 
 	public List<Medication> getMedicationCurrent() {
 		return medicationCurrent;
@@ -64,6 +78,14 @@ public class PatientBuilder {
 
 	public void setMedicationCurrent(ArrayList<Medication> medicationCurrent) {
 		this.medicationCurrent = medicationCurrent;
+	}
+	
+	public void addMedicationCurrent(final Medication med) {
+		this.medicationCurrent.add(med);
+	}
+	
+	public void addMedicationPrevious(final Medication med) {
+		this.medicationPrevious.add(med);
 	}
 
 	public List<Medication> getMedicationPrevious() {
@@ -81,6 +103,10 @@ public class PatientBuilder {
 	public void setMedicalEncounters(ArrayList<MedicalEncounter> medicalEncounters) {
 		this.medicalEncounters = medicalEncounters;
 	}
+	
+	public void addMedicalEncounter(final MedicalEncounter encounter) {
+		this.medicalEncounters.add(encounter);
+	}
 
 	public List<PatientTest> getTests() {
 		return tests;
@@ -88,6 +114,10 @@ public class PatientBuilder {
 
 	public void setTests(ArrayList<PatientTest> tests) {
 		this.tests = tests;
+	}
+	
+	public void addTest(final PatientTest t) {
+		this.tests.add(t);
 	}
 
 	public PatientIdentifier getId() {

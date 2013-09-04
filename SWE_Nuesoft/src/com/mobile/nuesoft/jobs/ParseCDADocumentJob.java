@@ -19,7 +19,10 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.mobile.nuesoft.Nuesoft;
+import com.mobile.nuesoft.data.Codes;
 import com.mobile.nuesoft.patient.Address;
+import com.mobile.nuesoft.patient.Allergy;
+import com.mobile.nuesoft.patient.Allergy.STATUS;
 import com.mobile.nuesoft.patient.Gender;
 import com.mobile.nuesoft.patient.IdentifierBuilder;
 import com.mobile.nuesoft.patient.Language;
@@ -123,18 +126,84 @@ public class ParseCDADocumentJob extends
 		        root.getChildNodes());
 
 		parsePatientGeneralInfo(record, patBuilder);
-		parsePatientAllergiesFromNode(record, patBuilder);
-		parsePatientMedicationsFromNode(record, patBuilder);
+
+		root = XMLParserUtil.getCDADocumentBodySection(root);
+
+		Log.d(TAG, "BODY ROOT IS: " + root.getNodeName());
+
+		parsePatientAllergiesFromNode(root, patBuilder);
+		parsePatientMedicationsFromNode(root, patBuilder);
 
 		return patBuilder.build();
 	}
-	
-	private void parsePatientAllergiesFromNode(final Node root, final PatientBuilder patient) {
-		
+
+	private void parsePatientAllergiesFromNode(final Node root,
+	        final PatientBuilder patient) {
+		ArrayList<Node> componentList = XMLParserUtil
+		        .getComponentNodesFromBody(root);
+
+		for (int i = 0; i < componentList.size(); i++) {
+			Node n = XMLParserUtil.getNode("section", componentList.get(i)
+			        .getChildNodes());
+			if (n.getNodeName().equals("section")) {
+				// Checking if it contains the allergy code
+				Node codeNode = XMLParserUtil
+				        .getNode("code", n.getChildNodes());
+				String code = XMLParserUtil.getNodeAttr("code", codeNode);
+				Log.d(TAG, "GOT CODE: " + code);
+				if (XMLParserUtil.getNodeAttr("code", codeNode).equals(
+				        Codes.getInstance().codeMap.get(Codes.ALLERGY))) {
+
+					Node allergyTextNode = XMLParserUtil.getNode("text",
+					        n.getChildNodes());
+					if (allergyTextNode != null) {
+						Node allergyListNode = XMLParserUtil.getNode("list",
+						        allergyTextNode.getChildNodes());
+						if (allergyListNode != null) {
+							if (allergyListNode.hasChildNodes()) {
+								NodeList itemList = allergyListNode
+								        .getChildNodes();
+
+								for (int j = 0; j < itemList.getLength(); j++) {
+									Node item = itemList.item(j);
+									if (item.getNodeName().equals("item")) {
+										Node content = XMLParserUtil
+										        .getNode("content",
+										                item.getChildNodes());
+
+										Allergy mAllergy = null;
+
+										Log.d(TAG,
+										        "GOT CONTENT NODE: "
+										                + content.getNodeName()
+										                + " VALUE: "
+										                + XMLParserUtil
+										                        .getNodeAttr(
+										                                "ID",
+										                                content));
+
+										String data = "";
+										data = XMLParserUtil
+										        .getNodeValue(content);
+
+										Log.d(TAG, "GOT ALLERGY: " + data);
+
+										mAllergy = new Allergy(data, "", 0L,
+										        0L, STATUS.ACTIVE);
+										patient.addAllergy(mAllergy);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-	
-	private void parsePatientMedicationsFromNode(final Node root, final PatientBuilder patient) {
-		
+
+	private void parsePatientMedicationsFromNode(final Node root,
+	        final PatientBuilder patient) {
+
 	}
 
 	private void parsePatientGeneralInfo(final Node root,

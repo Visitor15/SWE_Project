@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:padding="4dip"
         android:text="Patient&apos;s Name"
-        android:textColor="#33B5E5"
+        android:textColor="#FFFFFF"
         android:textSize="26sp"
         custom:textStyle="fonts/Roboto-Thin.ttf" />
 
@@ -23,7 +23,7 @@
         android:layout_weight="1"
         android:cacheColorHint="@null"
         android:choiceMode="singleChoice"
-        android:divider="#33B5E5"
+        android:divider="#FFFFFF"
         android:dividerHeight="0dp"
         android:scrollbars="none" />
 
