@@ -1,4 +1,4 @@
-package com.mobile.neusoft.adapters;
+package com.mobile.nuesoft.adapters;
 
 import java.util.ArrayList;
 import java.util.HashMap;

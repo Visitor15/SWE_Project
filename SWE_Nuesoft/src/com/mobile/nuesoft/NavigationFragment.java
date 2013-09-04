@@ -17,7 +17,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.mobile.neusoft.adapters.ListViewAdapter;
+import com.mobile.nuesoft.adapters.ListViewAdapter;
 import com.mobile.nuesoft.jobs.ParseCDADocumentJob;
 import com.mobile.nuesoft.jobs.PatientUpdateEvent;
 import com.mobile.nuesoft.patient.OnPatientObjUpdated;
