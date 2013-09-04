@@ -178,7 +178,7 @@ public class PatientBuilder {
 
 	public PatientObj build() {
 		return new PatientObj(id, firstName, lastName, birthTime, address,
-		        gender, race, religion, ethnicGroup, languages,
+		        gender, race, religion, ethnicGroup, languages, allergies,
 		        medicationCurrent, medicationPrevious, medicalEncounters,
 		        tests, maritalStatus);
 	}
@@ -213,6 +213,7 @@ public class PatientBuilder {
 		        final String BIRTH_TIME, final Address ADDRESS,
 		        final Gender GENDER, final String RACE, final String RELIGION,
 		        final String ETHNIC_GROUP, final ArrayList<Language> LANGUAGES,
+		        final ArrayList<Allergy> ALLERGIES,
 		        final ArrayList<Medication> MEDICATION_CURRENT,
 		        final ArrayList<Medication> MEDICATION_PREVIOUS,
 		        final ArrayList<MedicalEncounter> MEDICATION_ENCOUNTERS,
@@ -229,6 +230,7 @@ public class PatientBuilder {
 			this.RELIGION = RELIGION;
 			this.ETHNIC_GROUP = ETHNIC_GROUP;
 			this.LANGUAGES = LANGUAGES;
+			this.ALLERGIES = ALLERGIES;
 			this.MEDICATION_CURRENT = MEDICATION_CURRENT;
 			this.MEDICATION_PREVIOUS = MEDICATION_PREVIOUS;
 			this.MEDICAL_ENCOUNTERS = MEDICATION_ENCOUNTERS;
@@ -339,12 +341,13 @@ public class PatientBuilder {
 			results += "Religion: " + this.getRELIGION() + "\n";
 			results += "Ethnic Group: " + this.getETHNIC_GROUP() + "\n";
 			results += "# Langages: " + this.getLANGUAGES().size() + "\n";
-//			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size()
-//			        + "\n";
-//			results += "# Meds Previous: "
-//			        + this.getMEDICATION_PREVIOUS().size() + "\n";
-//			results += "# Medical Events: "
-//			        + this.getMEDICAL_ENCOUNTERS().size() + "\n";
+			results += "# Allergies: " + this.getALLERGIES().size() + "\n";
+			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size()
+			        + "\n";
+			results += "# Meds Previous: "
+			        + this.getMEDICATION_PREVIOUS().size() + "\n";
+			results += "# Medical Events: "
+			        + this.getMEDICAL_ENCOUNTERS().size() + "\n";
 
 			return results;
 		}

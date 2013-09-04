@@ -59,6 +59,8 @@ public class ParseCDADocumentJob extends
 
 			Log.d(TAG, "On Post Execute for PATIENT: " + result);
 
+			Nuesoft.getReference().setPatientToCurrent(result);
+
 			PatientUpdateEvent.broadcast(Nuesoft.getReference(), updateBundle);
 		}
 	}
@@ -77,6 +79,8 @@ public class ParseCDADocumentJob extends
 		updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, false);
 		updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY,
 		        updatedPatient);
+
+		Nuesoft.getReference().setPatientToCurrent(updatedPatient);
 
 		PatientUpdateEvent.broadcast(Nuesoft.getReference(), updateBundle);
 	}

@@ -137,6 +137,9 @@ public class NavigationFragment extends NuesoftFragment implements
 						        .getFIRST_NAME()
 						        + " "
 						        + mPatient.getIDENTIFIER().getLAST_NAME());
+
+						mAdapter.init();
+						mAdapter.notifyDataSetChanged();
 						return;
 					}
 				}
