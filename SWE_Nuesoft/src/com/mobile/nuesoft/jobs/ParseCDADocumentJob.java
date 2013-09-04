@@ -35,8 +35,7 @@ import com.mobile.nuesoft.patient.PatientTest;
 import com.mobile.nuesoft.patient.Telephone;
 import com.mobile.nuesoft.util.XMLParserUtil;
 
-public class ParseCDADocumentJob extends
-        AsyncTask<String, PatientObj, PatientObj> {
+public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientObj> {
 
 	public static final String TAG = "ParseCDADocumentJob";
 
@@ -54,8 +53,7 @@ public class ParseCDADocumentJob extends
 		if (result != null) {
 			updateBundle = new Bundle();
 			updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, true);
-			updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY,
-			        result);
+			updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, result);
 
 			Log.d(TAG, "On Post Execute for PATIENT: " + result);
 
@@ -77,8 +75,7 @@ public class ParseCDADocumentJob extends
 
 		updateBundle = new Bundle();
 		updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, false);
-		updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY,
-		        updatedPatient);
+		updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, updatedPatient);
 
 		Nuesoft.getReference().setPatientToCurrent(updatedPatient);
 
@@ -99,8 +96,7 @@ public class ParseCDADocumentJob extends
 		List<PatientTest> tests = new ArrayList<PatientTest>();
 
 		try {
-			patientObj = parseDocument(new File(
-			        "storage/sdcard0/Download/sample_cda_file.xml"));
+			patientObj = parseDocument(new File("storage/sdcard0/Download/cda_sample_file.xml"));
 
 			Log.d(TAG, "GOT PATIENT: " + patientObj);
 		} catch (SAXException e) {
@@ -117,8 +113,7 @@ public class ParseCDADocumentJob extends
 		return patientObj;
 	}
 
-	private PatientObj parseDocument(final File mFile) throws SAXException,
-	        IOException, ParserConfigurationException {
+	private PatientObj parseDocument(final File mFile) throws SAXException, IOException, ParserConfigurationException {
 		PatientBuilder patBuilder = new PatientBuilder();
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -126,8 +121,7 @@ public class ParseCDADocumentJob extends
 
 		NodeList rootList = doc.getElementsByTagName("ClinicalDocument");
 		Node root = XMLParserUtil.getNode("ClinicalDocument", rootList);
-		Node record = XMLParserUtil.getNode("recordTarget",
-		        root.getChildNodes());
+		Node record = XMLParserUtil.getNode("recordTarget", root.getChildNodes());
 
 		parsePatientGeneralInfo(record, patBuilder);
 
@@ -141,59 +135,41 @@ public class ParseCDADocumentJob extends
 		return patBuilder.build();
 	}
 
-	private void parsePatientAllergiesFromNode(final Node root,
-	        final PatientBuilder patient) {
-		ArrayList<Node> componentList = XMLParserUtil
-		        .getComponentNodesFromBody(root);
+	private void parsePatientAllergiesFromNode(final Node root, final PatientBuilder patient) {
+		ArrayList<Node> componentList = XMLParserUtil.getComponentNodesFromBody(root);
 
 		for (int i = 0; i < componentList.size(); i++) {
-			Node n = XMLParserUtil.getNode("section", componentList.get(i)
-			        .getChildNodes());
+			Node n = XMLParserUtil.getNode("section", componentList.get(i).getChildNodes());
 			if (n.getNodeName().equals("section")) {
 				// Checking if it contains the allergy code
-				Node codeNode = XMLParserUtil
-				        .getNode("code", n.getChildNodes());
+				Node codeNode = XMLParserUtil.getNode("code", n.getChildNodes());
 				String code = XMLParserUtil.getNodeAttr("code", codeNode);
 				Log.d(TAG, "GOT CODE: " + code);
-				if (XMLParserUtil.getNodeAttr("code", codeNode).equals(
-				        Codes.getInstance().codeMap.get(Codes.ALLERGY))) {
+				if (XMLParserUtil.getNodeAttr("code", codeNode).equals(Codes.getInstance().codeMap.get(Codes.ALLERGY))) {
 
-					Node allergyTextNode = XMLParserUtil.getNode("text",
-					        n.getChildNodes());
+					Node allergyTextNode = XMLParserUtil.getNode("text", n.getChildNodes());
 					if (allergyTextNode != null) {
-						Node allergyListNode = XMLParserUtil.getNode("list",
-						        allergyTextNode.getChildNodes());
+						Node allergyListNode = XMLParserUtil.getNode("list", allergyTextNode.getChildNodes());
 						if (allergyListNode != null) {
 							if (allergyListNode.hasChildNodes()) {
-								NodeList itemList = allergyListNode
-								        .getChildNodes();
+								NodeList itemList = allergyListNode.getChildNodes();
 
 								for (int j = 0; j < itemList.getLength(); j++) {
 									Node item = itemList.item(j);
 									if (item.getNodeName().equals("item")) {
-										Node content = XMLParserUtil
-										        .getNode("content",
-										                item.getChildNodes());
+										Node content = XMLParserUtil.getNode("content", item.getChildNodes());
 
 										Allergy mAllergy = null;
 
-										Log.d(TAG,
-										        "GOT CONTENT NODE: "
-										                + content.getNodeName()
-										                + " VALUE: "
-										                + XMLParserUtil
-										                        .getNodeAttr(
-										                                "ID",
-										                                content));
+										Log.d(TAG, "GOT CONTENT NODE: " + content.getNodeName() + " VALUE: "
+										        + XMLParserUtil.getNodeAttr("ID", content));
 
 										String data = "";
-										data = XMLParserUtil
-										        .getNodeValue(content);
+										data = XMLParserUtil.getNodeValue(content);
 
 										Log.d(TAG, "GOT ALLERGY: " + data);
 
-										mAllergy = new Allergy(data, "", 0L,
-										        0L, STATUS.ACTIVE);
+										mAllergy = new Allergy(data, "", 0L, 0L, STATUS.ACTIVE);
 										patient.addAllergy(mAllergy);
 									}
 								}
@@ -205,13 +181,11 @@ public class ParseCDADocumentJob extends
 		}
 	}
 
-	private void parsePatientMedicationsFromNode(final Node root,
-	        final PatientBuilder patient) {
+	private void parsePatientMedicationsFromNode(final Node root, final PatientBuilder patient) {
 
 	}
 
-	private void parsePatientGeneralInfo(final Node root,
-	        final PatientBuilder patient) {
+	private void parsePatientGeneralInfo(final Node root, final PatientBuilder patient) {
 		IdentifierBuilder identifier = new IdentifierBuilder();
 		Node node = XMLParserUtil.getNode("patientRole", root.getChildNodes());
 		Node dataNode = null;
@@ -244,8 +218,7 @@ public class ParseCDADocumentJob extends
 		identifier.setEmail("N/A");
 
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
-		dataNode = XMLParserUtil.getNode("administrativeGenderCode",
-		        dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("administrativeGenderCode", dataNode.getChildNodes());
 		patient.setGender(getGenderFromNote(dataNode));
 
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
@@ -253,13 +226,11 @@ public class ParseCDADocumentJob extends
 		patient.setBirthTime(XMLParserUtil.getNodeAttr("value", dataNode));
 
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
-		dataNode = XMLParserUtil.getNode("maritalStatusCode",
-		        dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("maritalStatusCode", dataNode.getChildNodes());
 		patient.setMaritalStatus(getMaritalStatus(dataNode));
 
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
-		dataNode = XMLParserUtil.getNode("religiousAffiliationCode",
-		        dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("religiousAffiliationCode", dataNode.getChildNodes());
 		patient.setReligion(XMLParserUtil.getNodeAttr("displayName", dataNode));
 
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
@@ -267,14 +238,11 @@ public class ParseCDADocumentJob extends
 		patient.setRace(XMLParserUtil.getNodeAttr("displayName", dataNode));
 
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
-		dataNode = XMLParserUtil.getNode("ethnicGroupCode",
-		        dataNode.getChildNodes());
-		patient.setEthnicGroup(XMLParserUtil.getNodeAttr("displayName",
-		        dataNode));
+		dataNode = XMLParserUtil.getNode("ethnicGroupCode", dataNode.getChildNodes());
+		patient.setEthnicGroup(XMLParserUtil.getNodeAttr("displayName", dataNode));
 
 		dataNode = XMLParserUtil.getNode("patient", node.getChildNodes());
-		dataNode = XMLParserUtil.getNode("languageCommunication",
-		        dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("languageCommunication", dataNode.getChildNodes());
 		patient.setLanguages(getLanguagesFromNode(dataNode));
 
 		patient.setId(identifier.build());
@@ -330,14 +298,11 @@ public class ParseCDADocumentJob extends
 		String postal = "";
 		String country = "";
 
-		street = XMLParserUtil.getNodeValue("streetAddressLine",
-		        addrNode.getChildNodes());
+		street = XMLParserUtil.getNodeValue("streetAddressLine", addrNode.getChildNodes());
 		city = XMLParserUtil.getNodeValue("city", addrNode.getChildNodes());
 		state = XMLParserUtil.getNodeValue("state", addrNode.getChildNodes());
-		postal = XMLParserUtil.getNodeValue("postalCode",
-		        addrNode.getChildNodes());
-		country = XMLParserUtil.getNodeValue("country",
-		        addrNode.getChildNodes());
+		postal = XMLParserUtil.getNodeValue("postalCode", addrNode.getChildNodes());
+		country = XMLParserUtil.getNodeValue("country", addrNode.getChildNodes());
 
 		Address addr = new Address(street, city, state, postal, country);
 
@@ -354,8 +319,7 @@ public class ParseCDADocumentJob extends
 		String data = XMLParserUtil.getNodeAttr("value", telNode);
 
 		areaCode = data.substring(data.indexOf("+") + 3, data.lastIndexOf(")"));
-		firstPart = data.substring(data.lastIndexOf(")") + 1,
-		        data.lastIndexOf(")") + 4);
+		firstPart = data.substring(data.lastIndexOf(")") + 1, data.lastIndexOf(")") + 4);
 		secondPart = data.substring(data.length() - 4);
 
 		Telephone phone = new Telephone(areaCode, firstPart, secondPart);

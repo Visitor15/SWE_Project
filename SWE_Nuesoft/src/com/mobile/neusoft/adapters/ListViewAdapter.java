@@ -53,13 +53,14 @@ public class ListViewAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup container) {
 		ListViewItem currentItem = dataList.get(position);
 		if (convertView == null) {
-			if (currentItem.isHeader) {
+			if (currentItem.isHeader()) {
 				convertView = mInflater.inflate(
 				        R.layout.list_view_item_header_view, null);
-				convertView.setClickable(false);
+//				convertView.setClickable(false);
 			} else {
 				convertView = mInflater.inflate(R.layout.list_view_item_view,
 				        null);
+//				convertView.setClickable(true);
 			}
 		}
 

@@ -8,9 +8,6 @@ import com.mobile.nuesoft.patient.IdentifierBuilder.PatientIdentifier;
 
 public class PatientBuilder {
 	private PatientIdentifier id;
-	private String firstName;
-	private String lastName;
-	private Address address;
 	private String birthTime;
 	private Gender gender;
 	private String race;
@@ -36,14 +33,6 @@ public class PatientBuilder {
 		this.gender = gender;
 	}
 
-	public Address getAddress() {
-		return address;
-	}
-
-	public void setAddress(Address address) {
-		this.address = address;
-	}
-
 	public String getBirthTime() {
 		return birthTime;
 	}
@@ -59,11 +48,11 @@ public class PatientBuilder {
 	public void setMaritalStatus(Marital.STATUS maritalStatus) {
 		this.maritalStatus = maritalStatus;
 	}
-	
+
 	public ArrayList<Allergy> getAllergies() {
 		return allergies;
 	}
-	
+
 	public void addAllergy(final Allergy allergy) {
 		this.allergies.add(allergy);
 	}
@@ -79,11 +68,11 @@ public class PatientBuilder {
 	public void setMedicationCurrent(ArrayList<Medication> medicationCurrent) {
 		this.medicationCurrent = medicationCurrent;
 	}
-	
+
 	public void addMedicationCurrent(final Medication med) {
 		this.medicationCurrent.add(med);
 	}
-	
+
 	public void addMedicationPrevious(final Medication med) {
 		this.medicationPrevious.add(med);
 	}
@@ -103,7 +92,7 @@ public class PatientBuilder {
 	public void setMedicalEncounters(ArrayList<MedicalEncounter> medicalEncounters) {
 		this.medicalEncounters = medicalEncounters;
 	}
-	
+
 	public void addMedicalEncounter(final MedicalEncounter encounter) {
 		this.medicalEncounters.add(encounter);
 	}
@@ -115,7 +104,7 @@ public class PatientBuilder {
 	public void setTests(ArrayList<PatientTest> tests) {
 		this.tests = tests;
 	}
-	
+
 	public void addTest(final PatientTest t) {
 		this.tests.add(t);
 	}
@@ -126,22 +115,6 @@ public class PatientBuilder {
 
 	public void setId(PatientIdentifier id) {
 		this.id = id;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
 	}
 
 	public String getRace() {
@@ -177,10 +150,8 @@ public class PatientBuilder {
 	}
 
 	public PatientObj build() {
-		return new PatientObj(id, firstName, lastName, birthTime, address,
-		        gender, race, religion, ethnicGroup, languages, allergies,
-		        medicationCurrent, medicationPrevious, medicalEncounters,
-		        tests, maritalStatus);
+		return new PatientObj(id, birthTime, gender, race, religion, ethnicGroup, languages, allergies,
+		        medicationCurrent, medicationPrevious, medicalEncounters, tests, maritalStatus);
 	}
 
 	public class PatientObj implements Serializable {
@@ -191,15 +162,12 @@ public class PatientBuilder {
 		private static final long serialVersionUID = -5213206329002435084L;
 
 		private final PatientIdentifier IDENTIFIER;
-		private final String FIRST_NAME;
-		private final String LAST_NAME;
 		private final String BIRTH_TIME;
 		private final String RACE;
 		private final String RELIGION;
 		private final String ETHNIC_GROUP;
 		private final Gender GENDER;
 		private final Marital.STATUS MARITAL;
-		private final Address ADDRESS;
 
 		private ArrayList<Language> LANGUAGES;
 		private ArrayList<Allergy> ALLERGIES;
@@ -208,23 +176,15 @@ public class PatientBuilder {
 		private ArrayList<MedicalEncounter> MEDICAL_ENCOUNTERS;
 		private ArrayList<PatientTest> TESTS;
 
-		private PatientObj(final PatientIdentifier IDENTIFIER,
-		        final String FIRST_NAME, final String LAST_NAME,
-		        final String BIRTH_TIME, final Address ADDRESS,
-		        final Gender GENDER, final String RACE, final String RELIGION,
-		        final String ETHNIC_GROUP, final ArrayList<Language> LANGUAGES,
-		        final ArrayList<Allergy> ALLERGIES,
-		        final ArrayList<Medication> MEDICATION_CURRENT,
-		        final ArrayList<Medication> MEDICATION_PREVIOUS,
-		        final ArrayList<MedicalEncounter> MEDICATION_ENCOUNTERS,
-		        final ArrayList<PatientTest> TESTS,
+		private PatientObj(final PatientIdentifier IDENTIFIER, final String BIRTH_TIME, final Gender GENDER,
+		        final String RACE, final String RELIGION, final String ETHNIC_GROUP,
+		        final ArrayList<Language> LANGUAGES, final ArrayList<Allergy> ALLERGIES,
+		        final ArrayList<Medication> MEDICATION_CURRENT, final ArrayList<Medication> MEDICATION_PREVIOUS,
+		        final ArrayList<MedicalEncounter> MEDICATION_ENCOUNTERS, final ArrayList<PatientTest> TESTS,
 		        final Marital.STATUS MARITAL_STATUS) {
 
 			this.IDENTIFIER = IDENTIFIER;
-			this.FIRST_NAME = FIRST_NAME;
-			this.LAST_NAME = LAST_NAME;
 			this.BIRTH_TIME = BIRTH_TIME;
-			this.ADDRESS = ADDRESS;
 			this.GENDER = GENDER;
 			this.RACE = RACE;
 			this.RELIGION = RELIGION;
@@ -242,22 +202,10 @@ public class PatientBuilder {
 			return IDENTIFIER;
 		}
 
-		public String getFIRST_NAME() {
-			return FIRST_NAME;
-		}
-
-		public String getLAST_NAME() {
-			return LAST_NAME;
-		}
-
 		public String getBIRTH_TIME() {
 			return BIRTH_TIME;
 		}
 
-		public Address getADDRESS() {
-			return ADDRESS;
-		}
-		
 		public ArrayList<Allergy> getALLERGIES() {
 			return ALLERGIES;
 		}
@@ -270,8 +218,7 @@ public class PatientBuilder {
 			return (ArrayList<Medication>) MEDICATION_CURRENT.clone();
 		}
 
-		public void setMEDICATION_CURRENT(
-		        ArrayList<Medication> mEDICATION_CURRENT) {
+		public void setMEDICATION_CURRENT(ArrayList<Medication> mEDICATION_CURRENT) {
 			MEDICATION_CURRENT = mEDICATION_CURRENT;
 		}
 
@@ -279,8 +226,7 @@ public class PatientBuilder {
 			return (ArrayList<Medication>) MEDICATION_PREVIOUS.clone();
 		}
 
-		public void setMEDICATION_PREVIOUS(
-		        ArrayList<Medication> mEDICATION_PREVIOUS) {
+		public void setMEDICATION_PREVIOUS(ArrayList<Medication> mEDICATION_PREVIOUS) {
 			MEDICATION_PREVIOUS = mEDICATION_PREVIOUS;
 		}
 
@@ -288,8 +234,7 @@ public class PatientBuilder {
 			return (ArrayList<MedicalEncounter>) MEDICAL_ENCOUNTERS.clone();
 		}
 
-		public void setMEDICAL_ENCOUNTERS(
-		        ArrayList<MedicalEncounter> mEDICAL_ENCOUNTERS) {
+		public void setMEDICAL_ENCOUNTERS(ArrayList<MedicalEncounter> mEDICAL_ENCOUNTERS) {
 			MEDICAL_ENCOUNTERS = mEDICAL_ENCOUNTERS;
 		}
 
@@ -333,8 +278,8 @@ public class PatientBuilder {
 		public String toString() {
 			String results = "";
 
-			results += "Name: " + this.getIDENTIFIER().getFIRST_NAME() + " "
-			        + this.getIDENTIFIER().getLAST_NAME() + "\n";
+			results += "Name: " + this.getIDENTIFIER().getFIRST_NAME() + " " + this.getIDENTIFIER().getLAST_NAME()
+			        + "\n";
 			results += "Gender: " + this.getGENDER().toString() + "\n";
 			results += "Marital Status: " + this.getMARITAL().getTitle() + "\n";
 			results += "Race: " + this.getRACE() + "\n";
@@ -342,12 +287,9 @@ public class PatientBuilder {
 			results += "Ethnic Group: " + this.getETHNIC_GROUP() + "\n";
 			results += "# Langages: " + this.getLANGUAGES().size() + "\n";
 			results += "# Allergies: " + this.getALLERGIES().size() + "\n";
-			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size()
-			        + "\n";
-			results += "# Meds Previous: "
-			        + this.getMEDICATION_PREVIOUS().size() + "\n";
-			results += "# Medical Events: "
-			        + this.getMEDICAL_ENCOUNTERS().size() + "\n";
+			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size() + "\n";
+			results += "# Meds Previous: " + this.getMEDICATION_PREVIOUS().size() + "\n";
+			results += "# Medical Events: " + this.getMEDICAL_ENCOUNTERS().size() + "\n";
 
 			return results;
 		}
