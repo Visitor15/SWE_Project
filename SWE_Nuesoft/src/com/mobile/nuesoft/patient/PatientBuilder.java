@@ -290,6 +290,14 @@ public class PatientBuilder {
 			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size() + "\n";
 			results += "# Meds Previous: " + this.getMEDICATION_PREVIOUS().size() + "\n";
 			results += "# Medical Events: " + this.getMEDICAL_ENCOUNTERS().size() + "\n";
+			
+			results += "\n\n";
+			
+			results += "ALLERGIES... \n";
+			
+			for(int i = 0; i < this.getALLERGIES().size(); i++) {
+				results += i + ". " + this.getALLERGIES().get(i).toString() + "\n";
+			}
 
 			return results;
 		}

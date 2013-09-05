@@ -3,6 +3,7 @@ package com.mobile.nuesoft.jobs;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -23,6 +24,9 @@ import com.mobile.nuesoft.data.Codes;
 import com.mobile.nuesoft.patient.Address;
 import com.mobile.nuesoft.patient.Allergy;
 import com.mobile.nuesoft.patient.Allergy.STATUS;
+import com.mobile.nuesoft.patient.AllergyReaction;
+import com.mobile.nuesoft.patient.AllergyType;
+import com.mobile.nuesoft.patient.Drug;
 import com.mobile.nuesoft.patient.Gender;
 import com.mobile.nuesoft.patient.IdentifierBuilder;
 import com.mobile.nuesoft.patient.Language;
@@ -32,6 +36,7 @@ import com.mobile.nuesoft.patient.Medication;
 import com.mobile.nuesoft.patient.PatientBuilder;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
 import com.mobile.nuesoft.patient.PatientTest;
+import com.mobile.nuesoft.patient.Severity;
 import com.mobile.nuesoft.patient.Telephone;
 import com.mobile.nuesoft.util.XMLParserUtil;
 
@@ -97,8 +102,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		try {
 			patientObj = parseDocument(new File("storage/sdcard0/Download/cda_sample_file.xml"));
-
-			Log.d(TAG, "GOT PATIENT: " + patientObj);
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -127,8 +130,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		root = XMLParserUtil.getCDADocumentBodySection(root);
 
-		Log.d(TAG, "BODY ROOT IS: " + root.getNodeName());
-
 		parsePatientAllergiesFromNode(root, patBuilder);
 		parsePatientMedicationsFromNode(root, patBuilder);
 
@@ -137,6 +138,11 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 	private void parsePatientAllergiesFromNode(final Node root, final PatientBuilder patient) {
 		ArrayList<Node> componentList = XMLParserUtil.getComponentNodesFromBody(root);
+		ArrayList<Drug> allergyDrugList = new ArrayList<Drug>();
+		ArrayList<String> allergyNames = new ArrayList<String>();
+		Drug allergyDrug;
+		String displayName = "";
+		Allergy mAllergy = null;
 
 		for (int i = 0; i < componentList.size(); i++) {
 			Node n = XMLParserUtil.getNode("section", componentList.get(i).getChildNodes());
@@ -144,7 +150,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 				// Checking if it contains the allergy code
 				Node codeNode = XMLParserUtil.getNode("code", n.getChildNodes());
 				String code = XMLParserUtil.getNodeAttr("code", codeNode);
-				Log.d(TAG, "GOT CODE: " + code);
 				if (XMLParserUtil.getNodeAttr("code", codeNode).equals(Codes.getInstance().codeMap.get(Codes.ALLERGY))) {
 
 					Node allergyTextNode = XMLParserUtil.getNode("text", n.getChildNodes());
@@ -152,26 +157,175 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 						Node allergyListNode = XMLParserUtil.getNode("list", allergyTextNode.getChildNodes());
 						if (allergyListNode != null) {
 							if (allergyListNode.hasChildNodes()) {
-								NodeList itemList = allergyListNode.getChildNodes();
+								ArrayList<Node> itemList = XMLParserUtil.getNamedNodes("item", allergyListNode);
 
-								for (int j = 0; j < itemList.getLength(); j++) {
-									Node item = itemList.item(j);
+								Node content;
+								for (int j = 0; j < itemList.size(); j++) {
+									Node item = itemList.get(j);
 									if (item.getNodeName().equals("item")) {
-										Node content = XMLParserUtil.getNode("content", item.getChildNodes());
+										content = XMLParserUtil.getNode("content", item.getChildNodes());
 
-										Allergy mAllergy = null;
+										displayName = XMLParserUtil.getNodeValue(content);
+										valName = XMLParserUtil.getNodeAttr("ID", content);
 
-										Log.d(TAG, "GOT CONTENT NODE: " + content.getNodeName() + " VALUE: "
-										        + XMLParserUtil.getNodeAttr("ID", content));
-
-										String data = "";
-										data = XMLParserUtil.getNodeValue(content);
-
-										Log.d(TAG, "GOT ALLERGY: " + data);
-
-										mAllergy = new Allergy(data, "", 0L, 0L, STATUS.ACTIVE);
-										patient.addAllergy(mAllergy);
+										allergyNames.add(displayName);
 									}
+								}
+
+								ArrayList<Node> entryList = XMLParserUtil.getNamedNodes("entry", n);
+
+								String tempDisplayName;
+								Node observationNode;
+								Node tempRootNode;
+								for (int q = 0; q < entryList.size(); q++) {
+									content = entryList.get(q);
+									content = XMLParserUtil.getNode("act", content.getChildNodes());
+									tempRootNode = XMLParserUtil.getNode("statusCode", content.getChildNodes());
+									String status = XMLParserUtil.getNodeAttr("code", tempRootNode);
+
+									tempRootNode = XMLParserUtil.getNode("effectiveTime", content.getChildNodes());
+									tempRootNode = XMLParserUtil.getNode("low", tempRootNode.getChildNodes());
+									String effectiveTimeLow = XMLParserUtil.getNodeAttr("value", tempRootNode);
+
+									tempRootNode = XMLParserUtil.getNode("code", content.getChildNodes());
+									String allergyCode = XMLParserUtil.getNodeAttr("code", tempRootNode);
+
+									String allergyCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", tempRootNode);
+
+									String allergyCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName",
+									        tempRootNode);
+
+									// tempRootNode =
+									// XMLParserUtil.getNode("effectiveTime",
+									// content.getChildNodes());
+									// tempRootNode =
+									// XMLParserUtil.getNode("low",
+									// tempRootNode.getChildNodes());
+									// String effectiveTimeLow =
+									// XMLParserUtil.getNodeAttr("low",
+									// tempRootNode);
+									// Log.d(TAG,
+									// "GOT ALLERGY EFFECTIVE LOW DATE: " +
+									// effectiveTimeLow);
+
+									content = XMLParserUtil.getNode("entryRelationship", content.getChildNodes());
+									observationNode = XMLParserUtil.getNode("observation", content.getChildNodes());
+
+									// tempRootNode =
+									// XMLParserUtil.getNode("originalText",
+									// observationNode.getChildNodes());
+									// Log.d(TAG, "TEMP ROOT NODE: " +
+									// tempRootNode.getNodeName());
+									// tempDisplayName =
+									// XMLParserUtil.getNodeAttr("reference",
+									// "value", tempRootNode.getChildNodes());
+									// Log.d(TAG, "TEMP DISPLAY NAME: " +
+									// tempDisplayName);
+
+									String allergyTypeDisplayName = XMLParserUtil.getNodeAttr("displayName",
+									        XMLParserUtil.getNode("value", observationNode.getChildNodes()));
+
+									String allergyTypeCode = XMLParserUtil.getNodeAttr("code",
+									        XMLParserUtil.getNode("value", observationNode.getChildNodes()));
+
+									String allergyTypeCodeSystem = XMLParserUtil.getNodeAttr("codeSystem",
+									        XMLParserUtil.getNode("value", observationNode.getChildNodes()));
+
+									String allergyTypeCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName",
+									        XMLParserUtil.getNode("value", observationNode.getChildNodes()));
+
+									AllergyType allergyType = new AllergyType(allergyTypeDisplayName, allergyTypeCode,
+									        allergyTypeCodeSystem, allergyTypeCodeSystemName);
+
+									ArrayList<Node> participantList = XMLParserUtil.getNamedNodes("participant",
+									        observationNode);
+
+									for (int k = 0; k < participantList.size(); k++) {
+										tempRootNode = XMLParserUtil.getNode("participantRole", participantList.get(k)
+										        .getChildNodes());
+										tempRootNode = XMLParserUtil.getNode("playingEntity",
+										        tempRootNode.getChildNodes());
+
+										String drugCode;
+										String drugDisplayName;
+										String drugCodeSystem;
+										String drugCodeSystemName;
+
+										drugCode = XMLParserUtil.getNodeAttr("code", "code",
+										        tempRootNode.getChildNodes());
+										drugDisplayName = XMLParserUtil.getNodeAttr("code", "displayName",
+										        tempRootNode.getChildNodes());
+										drugCodeSystem = XMLParserUtil.getNodeAttr("code", "codeSystem",
+										        tempRootNode.getChildNodes());
+										drugCodeSystemName = XMLParserUtil.getNodeAttr("code", "codeSystemName",
+										        tempRootNode.getChildNodes());
+
+										allergyDrug = new Drug(drugDisplayName, drugCode, drugCodeSystem,
+										        drugCodeSystemName);
+										allergyDrugList.add(allergyDrug);
+									}
+
+									content = XMLParserUtil.getNode("entryRelationship",
+									        observationNode.getChildNodes());
+									content = XMLParserUtil.getNode("observation", content.getChildNodes());
+
+									String drugReactionEffectiveDateLow = "";
+									String drugReactionEffectiveDateHigh = "";
+									String drugReactionDisplayName = "";
+									String drugReactionCode = "";
+									String drugReactionCodeSystem = "";
+									String drugReactionCodeSystemName = "";
+
+									tempRootNode = XMLParserUtil.getNode("value", content.getChildNodes());
+									drugReactionDisplayName = XMLParserUtil.getNodeAttr("displayName", tempRootNode);
+									drugReactionCode = XMLParserUtil.getNodeAttr("code", tempRootNode);
+									drugReactionCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", tempRootNode);
+									drugReactionCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName",
+									        tempRootNode);
+
+									tempRootNode = XMLParserUtil.getNode("effectiveTime", content.getChildNodes());
+									drugReactionEffectiveDateLow = XMLParserUtil.getNodeAttr("low", "value",
+									        tempRootNode.getChildNodes());
+
+									AllergyReaction reaction = new AllergyReaction(drugReactionDisplayName,
+									        drugReactionCode, drugReactionCodeSystem, drugReactionCodeSystemName);
+
+									if (drugReactionEffectiveDateLow.trim().length() > 0) {
+										reaction.setEffectiveDateLow(drugReactionEffectiveDateLow);
+									}
+									if (drugReactionEffectiveDateHigh.trim().length() > 0) {
+										reaction.setEffectiveDateHigh(drugReactionEffectiveDateHigh);
+									}
+
+									String reactionSeverityDisplayName;
+									String reactionSeverityCode;
+									String reactionSeverityCodeSystem;
+									String reactionSeverityCodeSystemName;
+
+									tempRootNode = XMLParserUtil.getNode("entryRelationship", content.getChildNodes());
+									tempRootNode = XMLParserUtil.getNode("observation", tempRootNode.getChildNodes());
+									tempRootNode = XMLParserUtil.getNode("value", tempRootNode.getChildNodes());
+
+									reactionSeverityDisplayName = XMLParserUtil
+									        .getNodeAttr("displayName", tempRootNode);
+									reactionSeverityCode = XMLParserUtil.getNodeAttr("code", tempRootNode);
+									reactionSeverityCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", tempRootNode);
+									reactionSeverityCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName",
+									        tempRootNode);
+
+									Severity allergySeverity = new Severity(reactionSeverityDisplayName,
+									        reactionSeverityCode, reactionSeverityCodeSystem,
+									        reactionSeverityCodeSystemName);
+
+									// Getting narrative display name
+									displayName = allergyNames.get(q);
+
+									// Creating allergy object
+									mAllergy = new Allergy(displayName, displayName, allergyCode, allergyCodeSystem,
+									        allergyCodeSystemName, reaction, allergySeverity, 0L, 0L, allergyType,
+									        STATUS.ACTIVE);
+									mAllergy.addAllergicDruglist(allergyDrugList);
+									patient.addAllergy(mAllergy);
 								}
 							}
 						}
@@ -207,12 +361,8 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		dataNode = XMLParserUtil.getNode("name", dataNode.getChildNodes());
 		data = XMLParserUtil.getNodeValue("given", dataNode.getChildNodes());
 
-		Log.d(TAG, "GOT FIRST NAME: " + data);
-
 		identifier.setFirstName(data);
 		data = XMLParserUtil.getNodeValue("family", dataNode.getChildNodes());
-
-		Log.d(TAG, "GOT LAST NAME: " + data);
 
 		identifier.setLastName(data);
 		identifier.setEmail("N/A");
@@ -271,8 +421,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		status = Marital.STATUS.fromTitle(statusStr);
 
-		Log.d(TAG, "GOT MARITAL STATUS: " + status);
-
 		return status;
 	}
 
@@ -285,8 +433,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		gender = XMLParserUtil.getNodeAttr("displayName", node);
 
 		mGender = new Gender(gender, genderCode);
-
-		Log.d(TAG, "GOT GENDER: " + mGender.toString());
 
 		return mGender;
 	}
@@ -306,8 +452,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		Address addr = new Address(street, city, state, postal, country);
 
-		Log.d(TAG, "GOT ADDRESS: " + addr);
-
 		return addr;
 	}
 
@@ -323,8 +467,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		secondPart = data.substring(data.length() - 4);
 
 		Telephone phone = new Telephone(areaCode, firstPart, secondPart);
-
-		Log.d(TAG, "GOT TELELPHONE: " + phone.toString());
 
 		return phone;
 	}

@@ -6,6 +6,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.util.Log;
+
 public class XMLParserUtil {
 
 	public static final String TAG = "XMLParserUtil";
@@ -85,6 +87,20 @@ public class XMLParserUtil {
 		for (int i = 0; i < rootChildList.getLength(); i++) {
 			Node n = rootChildList.item(i);
 			if (n.getNodeName().equals("component")) {
+				list.add(n);
+			}
+		}
+
+		return list;
+	}
+	
+	public static ArrayList<Node> getNamedNodes(final String nodeName, final Node rootNode) {
+		ArrayList<Node> list = new ArrayList<Node>();
+		NodeList rootChildList = rootNode.getChildNodes();
+
+		for (int i = 0; i < rootChildList.getLength(); i++) {
+			Node n = rootChildList.item(i);
+			if (n.getNodeName().equals(nodeName)) {
 				list.add(n);
 			}
 		}

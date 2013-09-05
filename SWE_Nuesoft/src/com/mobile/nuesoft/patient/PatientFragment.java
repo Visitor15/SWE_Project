@@ -215,7 +215,6 @@ public class PatientFragment extends NuesoftFragment implements
 
 				if (b.containsKey(ParseCDADocumentJob.IS_FINISHED_KEY)) {
 					if ((b.getBoolean(ParseCDADocumentJob.IS_FINISHED_KEY))) {
-						Log.d(TAG, "GOT PATIENT: " + mPatient.toString());
 
 						mPatientTitleName.setText(mPatient.getIDENTIFIER().getFIRST_NAME()
 						        + " " + mPatient.getIDENTIFIER().getLAST_NAME());
