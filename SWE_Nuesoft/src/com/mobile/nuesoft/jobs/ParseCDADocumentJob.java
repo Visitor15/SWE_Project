@@ -48,7 +48,7 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	public static final String IS_FINISHED_KEY = "com.mobile.nuesoft.job.FINISHED_KEY";
 
 	private Bundle updateBundle;
-	
+
 	private DocumentBuilderFactory dbFactory;
 	private DocumentBuilder dBuilder;
 	private Document doc;
@@ -146,7 +146,7 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		Node record = XMLParserUtil.getNode("recordTarget", root.getChildNodes());
 		root = XMLParserUtil.getCDADocumentBodySection(root);
 		componentNodeList = XMLParserUtil.getComponentNodesFromBody(root);
-		
+
 		parsePatientGeneralInfo(record, patBuilder);
 
 		for (Node n : componentNodeList) {
@@ -484,16 +484,117 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	}
 
 	private void parsePatientMedicationsFromNode(final Node root, final PatientBuilder patient) {
-		Node codeNode = XMLParserUtil.getNode("code", root.getChildNodes());
-		String code = XMLParserUtil.getNodeAttr("code", codeNode);
+		ArrayList<Node> itemList;
+		ArrayList<Node> entryList;
+		Node dataNode = XMLParserUtil.getNode("code", root.getChildNodes());
+		String code = XMLParserUtil.getNodeAttr("code", dataNode);
 		Log.d(TAG, "GOT MEDICATION CODE: " + code);
+
+		ArrayList<String> medicationNarrativeName = new ArrayList<String>();
+		dataNode = XMLParserUtil.getNode("text", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("list", dataNode.getChildNodes());
+		itemList = XMLParserUtil.getNamedNodes("item", dataNode);
+
+		Log.d(TAG, "# OF MEDICATIONS IN PATIENT HISTORY: " + itemList.size());
+
+		Node tempNode;
+		for (Node n : itemList) {
+			tempNode = XMLParserUtil.getNode("content", n.getChildNodes());
+			medicationNarrativeName.add(XMLParserUtil.getNodeValue(tempNode));
+		}
+
+		entryList = XMLParserUtil.getNamedNodes("entry", root);
+		Log.d(TAG, "# OF MEDICATION ENTRIES: " + entryList.size());
+
+		String mTitle = "";
+		String mInstructions = "";
+		String mDateLow = "";
+		String mDateHigh = "";
+		String mStatus = "";
+		String mManufacturerCode = "";
+		String mManufacturerCodeSystem = "";
+		String mManufacturerCodeSystemName = "";
+		String mAdministeredType = "";
+		String mAdministeredMethod = "";
+		String mAdministeredFreq = "";
+		String mDosageQuantity = "";
+		for (int i = 0; i < entryList.size(); i++) {
+			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
+
+			tempNode = XMLParserUtil.getNode("statusCode", tempNode.getChildNodes());
+			mStatus = XMLParserUtil.getNodeAttr("code", tempNode);
+			Log.d(TAG, "MEDICATION STATUS: " + mStatus);
+
+			tempNode = entryList.get(i);
+			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
+
+			ArrayList<Node> effectiveTimeNodes = XMLParserUtil.getNamedNodes("effectiveTime", tempNode);
+
+			for (int j = 0; j < effectiveTimeNodes.size(); j++) {
+				Node dateNode = effectiveTimeNodes.get(j);
+
+				for (int k = 0; k < dateNode.getChildNodes().getLength(); k++) {
+					tempNode = dateNode.getChildNodes().item(k);
+					Log.d(TAG, "MEDICATION DATE NODE NAME: " + tempNode.getNodeName());
+					if (tempNode.getNodeName().equals("low")) {
+						mDateLow = XMLParserUtil.getNodeAttr("value", tempNode);
+					} else if (tempNode.getNodeName().equals("high")) {
+						mDateHigh = XMLParserUtil.getNodeAttr("value", tempNode);
+					} else if (tempNode.getNodeName().equals("period")) {
+						mAdministeredFreq = XMLParserUtil.getNodeAttr("value", tempNode);
+						mAdministeredFreq += XMLParserUtil.getNodeAttr("unit", tempNode);
+					}
+				}
+			}
+
+			Log.d(TAG, "MEDICATION DATE LOW: " + mDateLow);
+			Log.d(TAG, "MEDICATION DATE HIGH: " + mDateHigh);
+
+			tempNode = entryList.get(i);
+			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
+			tempNode = XMLParserUtil.getNode("routeCode", tempNode.getChildNodes());
+			mAdministeredMethod = XMLParserUtil.getNodeAttr("displayName", tempNode);
+			Log.d(TAG, "MEDICATION ADMINISTERED METHOD: " + mAdministeredMethod);
+
+			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
+			tempNode = XMLParserUtil.getNode("doseQuantity", tempNode.getChildNodes());
+			mDosageQuantity = XMLParserUtil.getNodeAttr("value", tempNode);
+			Log.d(TAG, "MEDICATION DOSAGE QUANTITY: " + mDosageQuantity);
+
+			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
+			tempNode = XMLParserUtil.getNode("administrationUnitCode", tempNode.getChildNodes());
+			mAdministeredType = XMLParserUtil.getNodeAttr("displayName", tempNode);
+			Log.d(TAG, "MEDICATION TYPE: " + mAdministeredType);
+
+			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
+			tempNode = XMLParserUtil.getNode("consumable", tempNode.getChildNodes());
+			tempNode = XMLParserUtil.getNode("manufacturedProduct", tempNode.getChildNodes());
+			tempNode = XMLParserUtil.getNode("manufacturedMaterial", tempNode.getChildNodes());
+			tempNode = XMLParserUtil.getNode("code", tempNode.getChildNodes());
+			mManufacturerCode = XMLParserUtil.getNodeAttr("code", tempNode);
+			mManufacturerCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", tempNode);
+			mManufacturerCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", tempNode);
+			mTitle = XMLParserUtil.getNodeAttr("displayName", tempNode);
+
+			mInstructions = medicationNarrativeName.get(i);
+
+			if (mDateHigh.trim().length() > 0) {
+				patient.addMedicationPrevious(new Medication(mTitle, mInstructions, mDateLow, mDateHigh, mStatus,
+				        mManufacturerCode, mManufacturerCodeSystem, mManufacturerCodeSystemName, mAdministeredType,
+				        mAdministeredMethod, mAdministeredFreq, mDosageQuantity));
+			} else {
+				patient.addMedicationCurrent(new Medication(mTitle, mInstructions, mDateLow, mDateHigh, mStatus,
+				        mManufacturerCode, mManufacturerCodeSystem, mManufacturerCodeSystemName, mAdministeredType,
+				        mAdministeredMethod, mAdministeredFreq, mDosageQuantity));
+			}
+		}
 	}
 
 	private void parsePatientGeneralInfo(final Node root, final PatientBuilder patient) {
 		Node node = XMLParserUtil.getNode("patientRole", root.getChildNodes());
 		Node dataNode = null;
 		String data = "";
-		
+
 		patIdBuilder = new IdentifierBuilder();
 
 		// Finding the id node

@@ -287,17 +287,30 @@ public class PatientBuilder {
 			results += "Ethnic Group: " + this.getETHNIC_GROUP() + "\n";
 			results += "# Langages: " + this.getLANGUAGES().size() + "\n";
 			results += "# Allergies: " + this.getALLERGIES().size() + "\n";
-			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size() + "\n";
-			results += "# Meds Previous: " + this.getMEDICATION_PREVIOUS().size() + "\n";
-			results += "# Medical Events: " + this.getMEDICAL_ENCOUNTERS().size() + "\n";
-			
-			results += "\n\n";
-			
+
 			results += "ALLERGIES... \n";
-			
-			for(int i = 0; i < this.getALLERGIES().size(); i++) {
+
+			for (int i = 0; i < this.getALLERGIES().size(); i++) {
 				results += i + ". " + this.getALLERGIES().get(i).toString() + "\n";
 			}
+
+			results += "# Meds Current: " + this.getMEDICATION_CURRENT().size() + "\n";
+
+			results += "MEDS CURRENT... \n";
+
+			for (int i = 0; i < this.getMEDICATION_CURRENT().size(); i++) {
+				results += i + ". " + this.getMEDICATION_CURRENT().get(i).toString() + "\n";
+			}
+
+			results += "# Meds Previous: " + this.getMEDICATION_PREVIOUS().size() + "\n";
+
+			results += "MEDS PREVIOUS... \n";
+
+			for (int i = 0; i < this.getMEDICATION_PREVIOUS().size(); i++) {
+				results += i + ". " + this.getMEDICATION_PREVIOUS().get(i).toString() + "\n";
+			}
+
+			results += "# Medical Events: " + this.getMEDICAL_ENCOUNTERS().size() + "\n";
 
 			return results;
 		}
