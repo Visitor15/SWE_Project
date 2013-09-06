@@ -59,11 +59,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	private PatientBuilder patBuilder;
 	private PatientObj patientObj;
 	private IdentifierBuilder patIdBuilder;
-	private List<Language> languages;
-	private List<MedicalEncounter> medicalEncounters;
-	private List<Medication> medicationCurrent;
-	private List<Medication> medicationPrevious;
-	private List<PatientTest> tests;
 
 	public ParseCDADocumentJob() {
 	}
@@ -90,11 +85,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		super.onPreExecute();
 
 		componentNodeList = new ArrayList<Node>();
-		tests = new ArrayList<PatientTest>();
-		medicationPrevious = new ArrayList<Medication>();
-		medicationCurrent = new ArrayList<Medication>();
-		medicalEncounters = new ArrayList<MedicalEncounter>();
-		languages = new ArrayList<Language>();
 		patIdBuilder = new IdentifierBuilder();
 	}
 
@@ -484,8 +474,22 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	}
 
 	private void parsePatientMedicationsFromNode(final Node root, final PatientBuilder patient) {
+		String mTitle = "";
+		String mInstructions = "";
+		String mDateLow = "";
+		String mDateHigh = "";
+		String mStatus = "";
+		String mManufacturerCode = "";
+		String mManufacturerCodeSystem = "";
+		String mManufacturerCodeSystemName = "";
+		String mAdministeredType = "";
+		String mAdministeredMethod = "";
+		String mAdministeredFreq = "";
+		String mDosageQuantity = "";
+
 		ArrayList<Node> itemList;
 		ArrayList<Node> entryList;
+
 		Node dataNode = XMLParserUtil.getNode("code", root.getChildNodes());
 		String code = XMLParserUtil.getNodeAttr("code", dataNode);
 		Log.d(TAG, "GOT MEDICATION CODE: " + code);
@@ -506,18 +510,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		entryList = XMLParserUtil.getNamedNodes("entry", root);
 		Log.d(TAG, "# OF MEDICATION ENTRIES: " + entryList.size());
 
-		String mTitle = "";
-		String mInstructions = "";
-		String mDateLow = "";
-		String mDateHigh = "";
-		String mStatus = "";
-		String mManufacturerCode = "";
-		String mManufacturerCodeSystem = "";
-		String mManufacturerCodeSystemName = "";
-		String mAdministeredType = "";
-		String mAdministeredMethod = "";
-		String mAdministeredFreq = "";
-		String mDosageQuantity = "";
 		for (int i = 0; i < entryList.size(); i++) {
 			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
 
