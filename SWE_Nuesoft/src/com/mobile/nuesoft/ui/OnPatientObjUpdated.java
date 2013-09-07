@@ -1,4 +1,4 @@
-package com.mobile.nuesoft.patient;
+package com.mobile.nuesoft.ui;
 
 import android.os.Bundle;
 

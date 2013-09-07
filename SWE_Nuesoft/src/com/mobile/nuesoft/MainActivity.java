@@ -13,9 +13,9 @@ import android.view.Menu;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.mobile.nuesoft.patient.PatientFragment;
 import com.mobile.nuesoft.ui.FragmentCallbackEvent;
 import com.mobile.nuesoft.ui.NuesoftBroadcastReceiver;
+import com.mobile.nuesoft.ui.PatientFragment;
 
 
 public class MainActivity extends FragmentActivity {

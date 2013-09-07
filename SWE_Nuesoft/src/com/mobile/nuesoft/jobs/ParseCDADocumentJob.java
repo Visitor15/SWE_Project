@@ -22,6 +22,7 @@ import android.util.Log;
 
 import com.mobile.nuesoft.Nuesoft;
 import com.mobile.nuesoft.data.Codes;
+import com.mobile.nuesoft.document.Encounter;
 import com.mobile.nuesoft.patient.Address;
 import com.mobile.nuesoft.patient.Allergy;
 import com.mobile.nuesoft.patient.Allergy.STATUS;
@@ -32,7 +33,6 @@ import com.mobile.nuesoft.patient.Gender;
 import com.mobile.nuesoft.patient.IdentifierBuilder;
 import com.mobile.nuesoft.patient.Language;
 import com.mobile.nuesoft.patient.Marital;
-import com.mobile.nuesoft.patient.MedicalEncounter;
 import com.mobile.nuesoft.patient.Medication;
 import com.mobile.nuesoft.patient.PatientBuilder;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;

@@ -8,6 +8,8 @@ public class Address {
 	private final String POSTAL_CODE;
 	private final String COUNTRY;
 	
+	private String DEPARTMENT = "";
+	
 	public Address(final String STREET_ADDRESS_LINE, final String CITY, final String STATE, final String POSTAL_CODE, final String COUNTRY) {
 		this.STREET_ADDRESS_LINE = STREET_ADDRESS_LINE;
 		this.CITY = CITY;
@@ -34,6 +36,14 @@ public class Address {
 
 	public String getCOUNTRY() {
 		return COUNTRY;
+	}
+	
+	public void setDepartment(final String department) {
+		this.DEPARTMENT = department;
+	}
+	
+	public String getDepartment() {
+		return this.DEPARTMENT;
 	}
 	
 	@Override

@@ -1,4 +1,4 @@
-package com.mobile.nuesoft.patient;
+package com.mobile.nuesoft.ui;
 
 import java.util.ArrayList;
 
@@ -22,9 +22,8 @@ import com.mobile.nuesoft.NuesoftFragment;
 import com.mobile.nuesoft.R;
 import com.mobile.nuesoft.jobs.ParseCDADocumentJob;
 import com.mobile.nuesoft.jobs.PatientUpdateEvent;
+import com.mobile.nuesoft.patient.PatientBuilder;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
-import com.mobile.nuesoft.ui.ActiveReferralsFragment;
-import com.mobile.nuesoft.ui.NuesoftBroadcastReceiver;
 
 public class PatientFragment extends NuesoftFragment implements
         OnPatientObjUpdated {

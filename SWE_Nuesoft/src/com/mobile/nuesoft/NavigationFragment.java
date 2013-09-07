@@ -20,10 +20,10 @@ import android.widget.TextView;
 import com.mobile.nuesoft.adapters.ListViewAdapter;
 import com.mobile.nuesoft.jobs.ParseCDADocumentJob;
 import com.mobile.nuesoft.jobs.PatientUpdateEvent;
-import com.mobile.nuesoft.patient.OnPatientObjUpdated;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
 import com.mobile.nuesoft.ui.FragmentCallbackEvent;
 import com.mobile.nuesoft.ui.NuesoftBroadcastReceiver;
+import com.mobile.nuesoft.ui.OnPatientObjUpdated;
 
 public class NavigationFragment extends NuesoftFragment implements OnPatientObjUpdated {
 

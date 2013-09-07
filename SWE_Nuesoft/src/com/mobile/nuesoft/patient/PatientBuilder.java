@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mobile.nuesoft.document.Encounter;
 import com.mobile.nuesoft.patient.IdentifierBuilder.PatientIdentifier;
 
 public class PatientBuilder {
@@ -17,7 +18,7 @@ public class PatientBuilder {
 	private ArrayList<Language> languages = new ArrayList<Language>();
 	private ArrayList<Medication> medicationCurrent = new ArrayList<Medication>();
 	private ArrayList<Medication> medicationPrevious = new ArrayList<Medication>();
-	private ArrayList<MedicalEncounter> medicalEncounters = new ArrayList<MedicalEncounter>();
+	private ArrayList<Encounter> medicalEncounters = new ArrayList<Encounter>();
 	private ArrayList<Allergy> allergies = new ArrayList<Allergy>();
 
 	private ArrayList<PatientTest> tests = new ArrayList<PatientTest>();
@@ -85,15 +86,15 @@ public class PatientBuilder {
 		this.medicationPrevious = medicationPrevious;
 	}
 
-	public List<MedicalEncounter> getMedicalEncounters() {
+	public List<Encounter> getMedicalEncounters() {
 		return medicalEncounters;
 	}
 
-	public void setMedicalEncounters(ArrayList<MedicalEncounter> medicalEncounters) {
+	public void setMedicalEncounters(ArrayList<Encounter> medicalEncounters) {
 		this.medicalEncounters = medicalEncounters;
 	}
 
-	public void addMedicalEncounter(final MedicalEncounter encounter) {
+	public void addMedicalEncounter(final Encounter encounter) {
 		this.medicalEncounters.add(encounter);
 	}
 
@@ -173,14 +174,14 @@ public class PatientBuilder {
 		private ArrayList<Allergy> ALLERGIES;
 		private ArrayList<Medication> MEDICATION_CURRENT;
 		private ArrayList<Medication> MEDICATION_PREVIOUS;
-		private ArrayList<MedicalEncounter> MEDICAL_ENCOUNTERS;
+		private ArrayList<Encounter> MEDICAL_ENCOUNTERS;
 		private ArrayList<PatientTest> TESTS;
 
 		private PatientObj(final PatientIdentifier IDENTIFIER, final String BIRTH_TIME, final Gender GENDER,
 		        final String RACE, final String RELIGION, final String ETHNIC_GROUP,
 		        final ArrayList<Language> LANGUAGES, final ArrayList<Allergy> ALLERGIES,
 		        final ArrayList<Medication> MEDICATION_CURRENT, final ArrayList<Medication> MEDICATION_PREVIOUS,
-		        final ArrayList<MedicalEncounter> MEDICATION_ENCOUNTERS, final ArrayList<PatientTest> TESTS,
+		        final ArrayList<Encounter> MEDICATION_ENCOUNTERS, final ArrayList<PatientTest> TESTS,
 		        final Marital.STATUS MARITAL_STATUS) {
 
 			this.IDENTIFIER = IDENTIFIER;
@@ -230,11 +231,11 @@ public class PatientBuilder {
 			MEDICATION_PREVIOUS = mEDICATION_PREVIOUS;
 		}
 
-		public ArrayList<MedicalEncounter> getMEDICAL_ENCOUNTERS() {
-			return (ArrayList<MedicalEncounter>) MEDICAL_ENCOUNTERS.clone();
+		public ArrayList<Encounter> getMEDICAL_ENCOUNTERS() {
+			return (ArrayList<Encounter>) MEDICAL_ENCOUNTERS.clone();
 		}
 
-		public void setMEDICAL_ENCOUNTERS(ArrayList<MedicalEncounter> mEDICAL_ENCOUNTERS) {
+		public void setMEDICAL_ENCOUNTERS(ArrayList<Encounter> mEDICAL_ENCOUNTERS) {
 			MEDICAL_ENCOUNTERS = mEDICAL_ENCOUNTERS;
 		}
 
