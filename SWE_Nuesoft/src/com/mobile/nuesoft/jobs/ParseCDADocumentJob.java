@@ -3,9 +3,6 @@ package com.mobile.nuesoft.jobs;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,7 +19,7 @@ import android.util.Log;
 
 import com.mobile.nuesoft.Nuesoft;
 import com.mobile.nuesoft.data.Codes;
-import com.mobile.nuesoft.document.Encounter;
+import com.mobile.nuesoft.document.CDADocumentBuilder;
 import com.mobile.nuesoft.patient.Address;
 import com.mobile.nuesoft.patient.Allergy;
 import com.mobile.nuesoft.patient.Allergy.STATUS;
@@ -36,7 +33,6 @@ import com.mobile.nuesoft.patient.Marital;
 import com.mobile.nuesoft.patient.Medication;
 import com.mobile.nuesoft.patient.PatientBuilder;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
-import com.mobile.nuesoft.patient.PatientTest;
 import com.mobile.nuesoft.patient.Severity;
 import com.mobile.nuesoft.patient.Telephone;
 import com.mobile.nuesoft.util.XMLParserUtil;
@@ -56,6 +52,7 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 	private ArrayList<Node> componentNodeList;
 
+	private CDADocumentBuilder docBuilder;
 	private PatientBuilder patBuilder;
 	private PatientObj patientObj;
 	private IdentifierBuilder patIdBuilder;
@@ -86,6 +83,8 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		componentNodeList = new ArrayList<Node>();
 		patIdBuilder = new IdentifierBuilder();
+		patBuilder = new PatientBuilder();
+		docBuilder = new CDADocumentBuilder();
 	}
 
 	@Override
@@ -126,7 +125,6 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	}
 
 	private PatientObj parseDocument(final File mFile) throws SAXException, IOException, ParserConfigurationException {
-		patBuilder = new PatientBuilder();
 		dbFactory = DocumentBuilderFactory.newInstance();
 		dBuilder = dbFactory.newDocumentBuilder();
 		doc = dBuilder.parse(mFile);

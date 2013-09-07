@@ -204,6 +204,5 @@ public class CDADocumentBuilder {
 		public Encounter getENCOUNTER() {
 			return ENCOUNTER;
 		}
-		
 	}
 }
