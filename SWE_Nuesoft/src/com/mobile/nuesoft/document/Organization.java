@@ -10,6 +10,9 @@ public class Organization {
 	private final Telephone TELEPHONE;
 	
 	public String ID = "";
+	public String CODE = "";
+	public String CODE_SYSTEM = "";
+	public String CODE_SYSTEM_NAME = "";
 	
 	public Organization(final String DISPLAY_NAME, final Address ADDRESS, final Telephone TELEPHONE) {
 		this.DISPLAY_NAME = DISPLAY_NAME;
@@ -35,5 +38,29 @@ public class Organization {
 
 	public void setID(String iD) {
 		ID = iD;
+	}
+
+	public String getCODE() {
+		return CODE;
+	}
+
+	public void setCODE(String cODE) {
+		CODE = cODE;
+	}
+
+	public String getCODE_SYSTEM() {
+		return CODE_SYSTEM;
+	}
+
+	public void setCODE_SYSTEM(String cODE_SYSTEM) {
+		CODE_SYSTEM = cODE_SYSTEM;
+	}
+
+	public String getCODE_SYSTEM_NAME() {
+		return CODE_SYSTEM_NAME;
+	}
+
+	public void setCODE_SYSTEM_NAME(String cODE_SYSTEM_NAME) {
+		CODE_SYSTEM_NAME = cODE_SYSTEM_NAME;
 	}
 }

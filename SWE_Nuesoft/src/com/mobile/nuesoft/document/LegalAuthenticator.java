@@ -3,33 +3,24 @@ package com.mobile.nuesoft.document;
 public class LegalAuthenticator {
 
 	private final String TIME_AUTHENTICATED;
-	private Organization ORGANIZATION;
-	private Personnel AUTHENTICATOR;
-
-	public LegalAuthenticator(final String TIME_AUTHENTICATED, final Organization ORGANIZATION,
-	        final Personnel AUTHENTICATOR) {
+	private final Personnel AUTHENTICATOR;
+	private final String SIGNATURE_CODE;
+	
+	public LegalAuthenticator(final String TIME_AUTHENTICATED, final String SIGNATURE_CODE, final Personnel AUTHENTICATOR) {
 		this.TIME_AUTHENTICATED = TIME_AUTHENTICATED;
-		this.ORGANIZATION = ORGANIZATION;
+		this.SIGNATURE_CODE = SIGNATURE_CODE;
 		this.AUTHENTICATOR = AUTHENTICATOR;
-	}
-
-	public Organization getORGANIZATION() {
-		return ORGANIZATION;
-	}
-
-	public void setORGANIZATION(Organization oRGANIZATION) {
-		ORGANIZATION = oRGANIZATION;
 	}
 
 	public Personnel getAUTHENTICATOR() {
 		return AUTHENTICATOR;
 	}
 
-	public void setAUTHENTICATOR(Personnel aUTHENTICATOR) {
-		AUTHENTICATOR = aUTHENTICATOR;
-	}
-
 	public String getTIME_AUTHENTICATED() {
 		return TIME_AUTHENTICATED;
+	}
+
+	public String getSIGNATURE_CODE() {
+		return SIGNATURE_CODE;
 	}
 }

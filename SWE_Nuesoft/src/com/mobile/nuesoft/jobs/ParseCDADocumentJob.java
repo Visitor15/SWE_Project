@@ -19,7 +19,19 @@ import android.util.Log;
 
 import com.mobile.nuesoft.Nuesoft;
 import com.mobile.nuesoft.data.Codes;
+import com.mobile.nuesoft.document.Author;
 import com.mobile.nuesoft.document.CDADocumentBuilder;
+import com.mobile.nuesoft.document.CDADocumentBuilder.CDADocument;
+import com.mobile.nuesoft.document.Custodian;
+import com.mobile.nuesoft.document.DataEnterer;
+import com.mobile.nuesoft.document.DocRecipient;
+import com.mobile.nuesoft.document.Encounter;
+import com.mobile.nuesoft.document.LegalAuthenticator;
+import com.mobile.nuesoft.document.Organization;
+import com.mobile.nuesoft.document.Participant;
+import com.mobile.nuesoft.document.Personnel;
+import com.mobile.nuesoft.document.ServiceEvent;
+import com.mobile.nuesoft.document.ServicePerformer;
 import com.mobile.nuesoft.patient.Address;
 import com.mobile.nuesoft.patient.Allergy;
 import com.mobile.nuesoft.patient.Allergy.STATUS;
@@ -53,6 +65,7 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	private ArrayList<Node> componentNodeList;
 
 	private CDADocumentBuilder docBuilder;
+	private CDADocument mDocument;
 	private PatientBuilder patBuilder;
 	private PatientObj patientObj;
 	private IdentifierBuilder patIdBuilder;
@@ -107,8 +120,17 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		try {
 			docFile = new File("storage/sdcard0/Download/cda_sample_file.xml");
+
+			dbFactory = DocumentBuilderFactory.newInstance();
+			dBuilder = dbFactory.newDocumentBuilder();
+			doc = dBuilder.parse(docFile);
+
+			NodeList rootList = doc.getElementsByTagName("ClinicalDocument");
+			Node root = XMLParserUtil.getNode("ClinicalDocument", rootList);
+
 			if (docFile.exists()) {
-				patientObj = parseDocument(docFile);
+				mDocument = parseForCDADocument(root);
+				patientObj = parseForPatientObj(root);
 			}
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
@@ -124,13 +146,494 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		return patientObj;
 	}
 
-	private PatientObj parseDocument(final File mFile) throws SAXException, IOException, ParserConfigurationException {
-		dbFactory = DocumentBuilderFactory.newInstance();
-		dBuilder = dbFactory.newDocumentBuilder();
-		doc = dBuilder.parse(mFile);
+	private CDADocument parseForCDADocument(final Node node) {
+		Author mAuthor = null;
+		Custodian mCustodian = null;
+		DataEnterer mDataEnterer = null;
+		DocRecipient mRecipient = null;
+		LegalAuthenticator mLegalAuthenticator = null;
+		Participant mParticipant = null;
+		ServiceEvent mServiceEvent = null;
+		Encounter mEncounter = null;
+		String mID = "";
+		String mDisplayTitle = "";
+		String mSummaryTitle = "";
+		String mCode = "";
+		String mCodeSystem = "";
+		String mCodeSystemName = "";
 
-		NodeList rootList = doc.getElementsByTagName("ClinicalDocument");
-		Node root = XMLParserUtil.getNode("ClinicalDocument", rootList);
+		ArrayList<Node> participantNodeList;
+
+		Node dataNode;
+
+		mID = XMLParserUtil.getNodeAttr("extension", XMLParserUtil.getNode("id", node.getChildNodes()));
+		Log.d(TAG, "GOT DOC ID: " + mID);
+
+		dataNode = XMLParserUtil.getNode("code", node.getChildNodes());
+		mCode = XMLParserUtil.getNodeAttr("code", dataNode);
+		mCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+		mCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+		mSummaryTitle = XMLParserUtil.getNodeAttr("displayName", dataNode);
+
+		mDisplayTitle = XMLParserUtil.getNodeValue(XMLParserUtil.getNode("title", node.getChildNodes()));
+		Log.d(TAG, "GOT DOC TITLE: " + mDisplayTitle);
+
+		dataNode = XMLParserUtil.getNode("author", node.getChildNodes());
+		mAuthor = parseForAuthor(dataNode);
+
+		dataNode = XMLParserUtil.getNode("dataEnterer", node.getChildNodes());
+		mDataEnterer = parseForDataEnterer(dataNode);
+
+		dataNode = XMLParserUtil.getNode("custodian", node.getChildNodes());
+		mCustodian = parseForCustodian(dataNode);
+
+		dataNode = XMLParserUtil.getNode("informationRecipient", node.getChildNodes());
+		mRecipient = parseForRecipient(dataNode);
+
+		dataNode = XMLParserUtil.getNode("legalAuthenticator", node.getChildNodes());
+		mLegalAuthenticator = parseForLegalAuthenticator(dataNode);
+
+		dataNode = XMLParserUtil.getNode("legalAuthenticator", node.getChildNodes());
+		participantNodeList = XMLParserUtil.getNamedNodes("participant", node);
+		parseForParticipants(participantNodeList);
+
+		dataNode = XMLParserUtil.getNode("documentationOf", node.getChildNodes());
+		dataNode = XMLParserUtil.getNode("serviceEvent", dataNode.getChildNodes());
+		mServiceEvent = parseForServiceEvent(dataNode);
+
+		return null;
+	}
+
+	private ServiceEvent parseForServiceEvent(final Node root) {
+		ArrayList<Node> performerNodes;
+		ArrayList<ServicePerformer> servicePerformers = new ArrayList<ServicePerformer>();
+
+		ServicePerformer servicePerformer;
+		ServiceEvent serviceEvent;
+
+		String serviceEventCode = "";
+		String effectiveTimeLow = "";
+		String effectiveTimeHigh = "";
+		String performerTypeCode = "";
+		String performerId = "";
+		String providerTypeCode = "";
+		String providerTypeCodeSystem = "";
+		String providerTypeCodeSystemName = "";
+		String providerDisplayName = "";
+		String code = "";
+		String codeSystem = "";
+		String codeSystemName = "";
+		String assignedEntityId = "";
+		String assignedEntityCode = "";
+		String assignedEntityCodeSystem = "";
+		String assignedEntityCodeSystemName = "";
+		String functionCode = "";
+		String functionDisplayName = "";
+		String functionCodeSystem = "";
+		String functionCodeSystemName = "";
+
+		Address address = null;
+		Telephone telephone = null;
+		Personnel performer = null;
+
+		serviceEventCode = XMLParserUtil.getNodeAttr("classCode", root);
+
+		Node dataNode = XMLParserUtil.getNode("effectiveTime", root.getChildNodes());
+
+		int i = 0;
+		for (i = 0; i < dataNode.getChildNodes().getLength(); i++) {
+			Node n = dataNode.getChildNodes().item(i);
+
+			if (n.getNodeName().equals("low")) {
+				effectiveTimeLow = XMLParserUtil.getNodeAttr("value", n);
+			} else if (n.getNodeName().equals("high")) {
+				effectiveTimeHigh = XMLParserUtil.getNodeAttr("value", n);
+			}
+		}
+
+		performerNodes = XMLParserUtil.getNamedNodes("performer", root);
+		for (i = 0; i < performerNodes.size(); i++) {
+			dataNode = performerNodes.get(i);
+
+			performerTypeCode = XMLParserUtil.getNodeAttr("typeCode", dataNode);
+
+			Node functionNode = XMLParserUtil.getNode("functionCode", dataNode.getChildNodes());
+			if (functionNode != null) {
+				functionCode = XMLParserUtil.getNodeAttr("code", functionNode);
+				functionCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", functionNode);
+				functionCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", functionNode);
+				functionDisplayName = XMLParserUtil.getNodeAttr("displayName", functionNode);
+			}
+
+			dataNode = XMLParserUtil.getNode("assignedEntity", dataNode.getChildNodes());
+			performerId = XMLParserUtil.getNodeAttr("extension", XMLParserUtil.getNode("id", dataNode.getChildNodes()));
+
+			dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
+			providerTypeCode = XMLParserUtil.getNodeAttr("code", dataNode);
+			providerTypeCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+			providerTypeCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+			providerDisplayName = XMLParserUtil.getNodeAttr("displayName", dataNode);
+
+			dataNode = performerNodes.get(i);
+			dataNode = XMLParserUtil.getNode("assignedEntity", dataNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+			address = getAddressFromNode(dataNode);
+
+			dataNode = performerNodes.get(i);
+			dataNode = XMLParserUtil.getNode("assignedEntity", dataNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+			telephone = getTelephoneFromNode(dataNode);
+
+			dataNode = performerNodes.get(i);
+			dataNode = XMLParserUtil.getNode("assignedEntity", dataNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
+			performer = getPersonnelFromNode(dataNode);
+
+			performer.setPERSONNEL_ID(performerId);
+			performer.setPERSONNEL_ADDRESS(address);
+			performer.setTELEPHONE(telephone);
+			performer.setCODE_SYSTEM(providerTypeCode);
+			performer.setCODE_SYSTEM(providerTypeCodeSystem);
+			performer.setCODE_SYSTEM_NAME(providerTypeCodeSystemName);
+
+			servicePerformer = new ServicePerformer(performerTypeCode, performer);
+			servicePerformer.setCODE(providerTypeCode);
+			servicePerformer.setCODE_SYSTEM(providerTypeCodeSystem);
+			servicePerformer.setCODE_SYSTEM_NAME(providerTypeCodeSystemName);
+
+			if (functionCode.trim().length() > 0) {
+				servicePerformer.setFUNCTION_CODE(functionCode);
+				servicePerformer.setFUNCTION_CODE_SYSTEM(functionCodeSystem);
+				servicePerformer.setFUNCTION_CODE_SYSTEM_NAME(functionCodeSystemName);
+				servicePerformer.setFUNCTION_CODE_DISPLAY_NAME(functionDisplayName);
+			}
+
+			servicePerformers.add(servicePerformer);
+		}
+
+		serviceEvent = new ServiceEvent(serviceEventCode, effectiveTimeLow, effectiveTimeHigh);
+		serviceEvent.addSERVICE_PERFORMERS_LIST(servicePerformers);
+
+		return new ServiceEvent(serviceEventCode, effectiveTimeLow, effectiveTimeHigh);
+	}
+
+	private ArrayList<Participant> parseForParticipants(final ArrayList<Node> participantNodeList) {
+		ArrayList<Participant> participants = new ArrayList<Participant>();
+
+		String role = "";
+		String type = "";
+		Address address = null;
+		Telephone telephone = null;
+		Personnel participant = null;
+
+		Node dataNode;
+		for (int i = 0; i < participantNodeList.size(); i++) {
+			dataNode = participantNodeList.get(i);
+			role = XMLParserUtil.getNodeAttr("typeCode", dataNode);
+
+			dataNode = XMLParserUtil.getNode("associatedEntity", dataNode.getChildNodes());
+			type = XMLParserUtil.getNodeAttr("classCode", dataNode);
+			address = getAddressFromNode(XMLParserUtil.getNode("addr", dataNode.getChildNodes()));
+			telephone = getTelephoneFromNode(XMLParserUtil.getNode("telecom", dataNode.getChildNodes()));
+			participant = getPersonnelFromNode(XMLParserUtil.getNode("associatedPerson", dataNode.getChildNodes()));
+
+			participant.setPERSONNEL_ADDRESS(address);
+			participant.setTELEPHONE(telephone);
+
+			participants.add(new Participant(type, role, participant));
+		}
+
+		return participants;
+	}
+
+	private LegalAuthenticator parseForLegalAuthenticator(final Node root) {
+		Personnel authenticator = null;
+		Organization organization = null;
+		Address address = null;
+		Telephone telephone = null;
+
+		String authenticationTime = "";
+		String signatureCode = "";
+		String authenticatorId = "";
+		String authenticatorCodeSystem = "";
+		String orgCode = "";
+		String orgFacilityDisplayName = "";
+		String orgCodeSystem = "";
+		String orgCodeSystemName = "";
+
+		Node dataNode;
+
+		authenticationTime = XMLParserUtil.getNodeAttr("value", XMLParserUtil.getNode("time", root.getChildNodes()));
+		signatureCode = XMLParserUtil.getNodeAttr("code", XMLParserUtil.getNode("signatureCode", root.getChildNodes()));
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		authenticatorId = XMLParserUtil.getNodeAttr("extension", XMLParserUtil.getNode("id", dataNode.getChildNodes()));
+		authenticatorCodeSystem = XMLParserUtil.getNodeAttr("root",
+		        XMLParserUtil.getNode("id", dataNode.getChildNodes()));
+
+		dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
+		orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
+		orgCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+		orgFacilityDisplayName = XMLParserUtil.getNodeAttr("displayName", dataNode);
+		orgCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+		address = getAddressFromNode(dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
+		authenticator = getPersonnelFromNode(dataNode);
+
+		organization = new Organization(orgFacilityDisplayName, address, telephone);
+		organization.setCODE(orgCode);
+		organization.setCODE_SYSTEM(orgCodeSystem);
+		organization.setCODE_SYSTEM_NAME(orgCodeSystemName);
+
+		authenticator.setPERSONNEL_ID(authenticatorId);
+		authenticator.setPERSONNEL_DEPARTMENT(orgFacilityDisplayName);
+		authenticator.setCODE_SYSTEM(authenticatorCodeSystem);
+		authenticator.setPERSONNEL_ADDRESS(address);
+		authenticator.setPERSONNEL_ORGANIZATION(organization);
+
+		return new LegalAuthenticator(authenticationTime, signatureCode, authenticator);
+	}
+
+	private DocRecipient parseForRecipient(final Node root) {
+		Personnel recipient = null;
+		Telephone telephone = null;
+		Address address = null;
+		Organization organization = null;
+
+		String recipientId = "";
+		String recipientCodeSystem = "";
+		String orgId = "";
+		String orgCode = "";
+		String orgDisplayName = "";
+		String orgFacilityName = "";
+		String orgCodeSystem = "";
+		String orgCodeSystemName = "";
+
+		Node dataNode;
+
+		dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
+		recipientId = XMLParserUtil.getNodeAttr("extension", dataNode);
+		recipientCodeSystem = XMLParserUtil.getNodeAttr("root", dataNode);
+
+		dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("informationRecipient", dataNode.getChildNodes());
+		recipient = getPersonnelFromNode(dataNode);
+
+		dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("receivedOrganization", dataNode.getChildNodes());
+		orgDisplayName = XMLParserUtil.getNodeValue(XMLParserUtil.getNode("name", dataNode.getChildNodes()));
+		telephone = getTelephoneFromNode(XMLParserUtil.getNode("telecom", dataNode.getChildNodes()));
+		address = getAddressFromNode(XMLParserUtil.getNode("addr", dataNode.getChildNodes()));
+
+		dataNode = XMLParserUtil.getNode("standardIndustryClassCode", dataNode.getChildNodes());
+		orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
+		orgId = orgCode;
+		orgFacilityName = XMLParserUtil.getNodeAttr("displayName", dataNode);
+		orgCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+		orgCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+
+		organization = new Organization(orgDisplayName, address, telephone);
+		organization.setID(orgId);
+		organization.setCODE(orgCode);
+		organization.setCODE_SYSTEM(orgCodeSystem);
+		organization.setCODE_SYSTEM_NAME(orgCodeSystemName);
+
+		recipient.setPERSONNEL_ID(recipientId);
+		recipient.setCODE_SYSTEM(recipientCodeSystem);
+		recipient.setPERSONNEL_ADDRESS(address);
+		recipient.setPERSONNEL_DEPARTMENT(orgFacilityName);
+		recipient.setPERSONNEL_ORGANIZATION(organization);
+
+		return new DocRecipient(recipient, orgFacilityName);
+	}
+
+	private Custodian parseForCustodian(final Node root) {
+		Organization organization = null;
+		Telephone telephone = null;
+		Address address = null;
+
+		String orgId = "";
+		String orgCode = "";
+		String orgDisplayName = "";
+		String codeSystem = "";
+		String codeSystemName = "";
+
+		Node dataNode;
+
+		dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
+		orgId = XMLParserUtil.getNodeAttr("root", dataNode);
+		orgCode = XMLParserUtil.getNodeAttr("root", dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("name", dataNode.getChildNodes());
+		orgDisplayName = XMLParserUtil.getNodeValue(dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+		telephone = getTelephoneFromNode(dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
+		dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+		address = getAddressFromNode(dataNode);
+
+		organization = new Organization(orgDisplayName, address, telephone);
+		organization.setCODE(orgCode);
+		organization.setID(orgId);
+		organization.setCODE_SYSTEM(codeSystem);
+		organization.setCODE_SYSTEM_NAME(codeSystemName);
+
+		return new Custodian(organization);
+	}
+
+	private DataEnterer parseForDataEnterer(final Node root) {
+		Personnel person = null;
+		Organization organization = null;
+		Address address = null;
+		Telephone telephone = null;
+
+		String entererId = "";
+		String orgId = "";
+		String orgCode = "";
+		String orgDisplayName = "";
+		String codeSystem = "";
+		String codeSystemName = "";
+
+		Node dataNode;
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
+		entererId = XMLParserUtil.getNodeAttr("extension", dataNode);
+		orgId = XMLParserUtil.getNodeAttr("root", dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
+		orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
+		codeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+		codeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+		orgDisplayName = XMLParserUtil.getNodeAttr("displayName", dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+		address = getAddressFromNode(dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+		telephone = getTelephoneFromNode(dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
+		person = getPersonnelFromNode(dataNode);
+
+		person.setCODE_SYSTEM(codeSystem);
+		person.setCODE_SYSTEM_NAME(codeSystemName);
+		person.setPERSONNEL_ADDRESS(address);
+		person.setPERSONNEL_ID(entererId);
+
+		organization = new Organization(orgDisplayName, address, telephone);
+		organization.setCODE_SYSTEM(codeSystem);
+		organization.setCODE_SYSTEM_NAME(codeSystemName);
+		organization.setCODE(orgCode);
+		organization.setID(orgId);
+
+		return new DataEnterer(person, organization);
+	}
+
+	private Author parseForAuthor(final Node root) {
+		Address mAuthorAddress = null;
+		Telephone mAuthorTelephone = null;
+		Personnel person = null;
+		Organization organization = null;
+
+		String authorID = "";
+		String codeSystem = "";
+		String codeSystemName = "";
+		String timeAuthored = "";
+		String orgCode = "";
+		String orgDepartment = "";
+
+		Node dataNode;
+
+		dataNode = XMLParserUtil.getNode("time", root.getChildNodes());
+		timeAuthored = XMLParserUtil.getNodeAttr("value", dataNode);
+		Log.d(TAG, "GOT TIME AUTHORED: " + timeAuthored);
+
+		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
+		authorID = XMLParserUtil.getNodeAttr("extension", dataNode);
+		Log.d(TAG, "GOT AUTHOR ID: " + authorID);
+
+		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
+		orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
+		orgDepartment = XMLParserUtil.getNodeAttr("displayName", dataNode);
+		codeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+		codeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+		Log.d(TAG, "GOT ORG TYPE CODE: " + orgCode);
+		Log.d(TAG, "GOT ORG DEPARTMENT: " + orgDepartment);
+		Log.d(TAG, "GOT ORG CODE SYSTEM: " + codeSystem);
+		Log.d(TAG, "GOT ORG CODE SYSTEM NAME: " + codeSystemName);
+
+		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+		mAuthorAddress = getAddressFromNode(dataNode);
+
+		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+		mAuthorTelephone = this.getTelephoneFromNode(dataNode);
+
+		organization = new Organization(orgDepartment, mAuthorAddress, mAuthorTelephone);
+		organization.setCODE(orgCode);
+		organization.setCODE_SYSTEM(codeSystem);
+		organization.setCODE_SYSTEM_NAME(codeSystemName);
+
+		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
+		dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
+		person = getPersonnelFromNode(dataNode);
+
+		person.setPERSONNEL_ADDRESS(mAuthorAddress);
+		person.setPERSONNEL_ID(authorID);
+		person.setPERSONNEL_DEPARTMENT(orgDepartment);
+
+		return new Author(person, organization, timeAuthored);
+	}
+
+	private Personnel getPersonnelFromNode(final Node root) {
+		String givenName = "";
+		String familyName = "";
+		String suffix = "";
+
+		Node dataNode = XMLParserUtil.getNode("name", root.getChildNodes());
+
+		givenName = XMLParserUtil.getNodeValue(XMLParserUtil.getNode("given", dataNode.getChildNodes()));
+		familyName = XMLParserUtil.getNodeValue(XMLParserUtil.getNode("family", dataNode.getChildNodes()));
+
+		Node suffixNode = XMLParserUtil.getNode("suffix", dataNode.getChildNodes());
+		if (suffixNode != null) {
+			suffix = XMLParserUtil.getNodeValue(suffixNode);
+		} else {
+			suffix = "N/A";
+		}
+
+		return new Personnel(givenName, familyName, suffix);
+	}
+
+	private PatientObj parseForPatientObj(final Node node) throws SAXException, IOException,
+	        ParserConfigurationException {
+		Node root = node;
 		Node record = XMLParserUtil.getNode("recordTarget", root.getChildNodes());
 		root = XMLParserUtil.getCDADocumentBodySection(root);
 		componentNodeList = XMLParserUtil.getComponentNodesFromBody(root);
@@ -689,7 +1192,13 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		city = XMLParserUtil.getNodeValue("city", addrNode.getChildNodes());
 		state = XMLParserUtil.getNodeValue("state", addrNode.getChildNodes());
 		postal = XMLParserUtil.getNodeValue("postalCode", addrNode.getChildNodes());
-		country = XMLParserUtil.getNodeValue("country", addrNode.getChildNodes());
+
+		Node countryNode = XMLParserUtil.getNode("country", addrNode.getChildNodes());
+		if (countryNode != null) {
+			country = XMLParserUtil.getNodeValue(countryNode);
+		} else {
+			country = "";
+		}
 
 		Address addr = new Address(street, city, state, postal, country);
 

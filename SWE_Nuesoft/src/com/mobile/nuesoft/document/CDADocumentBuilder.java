@@ -2,11 +2,10 @@ package com.mobile.nuesoft.document;
 
 import java.util.ArrayList;
 
-
 public class CDADocumentBuilder {
-	
+
 	public static final String TAG = "CDADocumentBuilder";
-	
+
 	private ArrayList<Author> mAuthor = new ArrayList<Author>();
 	private ArrayList<Custodian> mCustodian = new ArrayList<Custodian>();
 	private ArrayList<DataEnterer> mDataEnterer = new ArrayList<DataEnterer>();
@@ -15,13 +14,32 @@ public class CDADocumentBuilder {
 	private ArrayList<Participant> mParticipants = new ArrayList<Participant>();
 	private ServiceEvent mServiceEvent;
 	private Encounter mEncounter;
+	private String mID;
+	private String mEffectiveTime;
 	private String mDisplayTitle;
+	private String mSummaryTitle;
 	private String mCode;
 	private String mCodeSystem;
 	private String mCodeSystemName;
-	
+
 	public CDADocumentBuilder() {
-		
+
+	}
+
+	public String getmID() {
+		return mID;
+	}
+
+	public void setmID(String mID) {
+		this.mID = mID;
+	}
+
+	public String getmEffectiveTime() {
+		return mEffectiveTime;
+	}
+
+	public void setmEffectiveTime(String mEffectiveTime) {
+		this.mEffectiveTime = mEffectiveTime;
 	}
 
 	public String getmDisplayTitle() {
@@ -30,6 +48,14 @@ public class CDADocumentBuilder {
 
 	public void setmDisplayTitle(String mDisplayTitle) {
 		this.mDisplayTitle = mDisplayTitle;
+	}
+
+	public String getmSummaryTitle() {
+		return mSummaryTitle;
+	}
+
+	public void setmSummaryTitle(String mSummaryTitle) {
+		this.mSummaryTitle = mSummaryTitle;
 	}
 
 	public String getmCode() {
@@ -119,7 +145,7 @@ public class CDADocumentBuilder {
 	public void setmEncounter(Encounter mEncounter) {
 		this.mEncounter = mEncounter;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "CDADocument";
@@ -128,7 +154,7 @@ public class CDADocumentBuilder {
 	public class CDADocument {
 
 		public static final String TAG = "CDADocument";
-		
+
 		private final ArrayList<Author> AUTHOR;
 		private final ArrayList<Custodian> CUSTODIAN;
 		private final ArrayList<DataEnterer> DATA_ENTERER;
@@ -137,12 +163,15 @@ public class CDADocumentBuilder {
 		private final ArrayList<Participant> PARTICIPANTS;
 		private final ServiceEvent SERVICE_EVENT;
 		private final Encounter ENCOUNTER;
+		private final String ID;
+		private final String EFFECTIVE_TIME;
 		private final String DISPLAY_TITLE;
+		private final String SUMMARY_TITLE;
 		private final String CODE;
 		private final String CODE_SYSTEM;
 		private final String CODE_SYSTEM_NAME;
-		
-		private CDADocument(final CDADocumentBuilder builder) {
+
+		public CDADocument(final CDADocumentBuilder builder) {
 			this.AUTHOR = builder.getmAuthor();
 			this.CUSTODIAN = builder.getmCustodian();
 			this.DATA_ENTERER = builder.getmDataEnterer();
@@ -151,14 +180,29 @@ public class CDADocumentBuilder {
 			this.PARTICIPANTS = builder.getmParticipants();
 			this.SERVICE_EVENT = builder.getmServiceEvent();
 			this.ENCOUNTER = builder.getmEncounter();
+			this.ID = builder.getmID();
+			this.EFFECTIVE_TIME = builder.getmEffectiveTime();
 			this.DISPLAY_TITLE = builder.getmDisplayTitle();
+			this.SUMMARY_TITLE = builder.getmSummaryTitle();
 			this.CODE = builder.getmCode();
 			this.CODE_SYSTEM = builder.getmCodeSystem();
 			this.CODE_SYSTEM_NAME = builder.getmCodeSystemName();
 		}
 
+		public String getID() {
+			return ID;
+		}
+
+		public String getEFFECTIVE_TIME() {
+			return EFFECTIVE_TIME;
+		}
+
 		public String getDISPLAY_TITLE() {
 			return DISPLAY_TITLE;
+		}
+
+		public String getSUMMARY_TITLE() {
+			return SUMMARY_TITLE;
 		}
 
 		public String getCODE() {
@@ -205,4 +249,5 @@ public class CDADocumentBuilder {
 			return ENCOUNTER;
 		}
 	}
+
 }

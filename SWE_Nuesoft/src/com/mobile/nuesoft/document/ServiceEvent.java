@@ -1,6 +1,7 @@
 package com.mobile.nuesoft.document;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ServiceEvent {
 
@@ -19,11 +20,15 @@ public class ServiceEvent {
 	}
 
 	public ArrayList<ServicePerformer> getSERVICE_PERFORMERS() {
-		return SERVICE_PERFORMERS;
+		return (ArrayList<ServicePerformer>) SERVICE_PERFORMERS.clone();
 	}
 
 	public void addSERVICE_PERFORMERS(final ServicePerformer performer) {
 		this.SERVICE_PERFORMERS.add(performer);
+	}
+	
+	public void addSERVICE_PERFORMERS_LIST(final List<ServicePerformer> list) {
+		this.SERVICE_PERFORMERS.addAll(list);
 	}
 
 	public String getEFFECTIVE_DATE_LOW() {
@@ -45,7 +50,7 @@ public class ServiceEvent {
 		val += "Service performed (" + this.getEFFECTIVE_DATE_LOW() + " - " + this.getEFFECTIVE_DATE_HIGH() + ")\n";
 		
 		for(int i = 0; i < this.SERVICE_PERFORMERS.size(); i++) {
-			val += "By: " + this.SERVICE_PERFORMERS.get(i).getPERSON().toString() + "\n";
+			val += "By: " + this.SERVICE_PERFORMERS.get(i).getPERFORMER().toString() + "\n";
 		}
 		
 		return val;

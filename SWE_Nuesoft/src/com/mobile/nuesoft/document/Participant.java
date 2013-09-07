@@ -1,20 +1,16 @@
 package com.mobile.nuesoft.document;
 
-import com.mobile.nuesoft.patient.Address;
-import com.mobile.nuesoft.patient.Telephone;
 
 public class Participant {
 
 	private final String TYPE;
 	private final String ROLE;
-	private final Address ADDRESS;
-	private final Telephone TELEPHONE;
+	private final Personnel PERSON;
 
-	public Participant(final String TYPE, final String ROLE, final Address ADDRESS, final Telephone TELEPHONE) {
+	public Participant(final String TYPE, final String ROLE, final Personnel PERSON) {
 		this.TYPE = TYPE;
 		this.ROLE = ROLE;
-		this.ADDRESS = ADDRESS;
-		this.TELEPHONE = TELEPHONE;
+		this.PERSON = PERSON;
 	}
 
 	public String getTYPE() {
@@ -25,11 +21,7 @@ public class Participant {
 		return ROLE;
 	}
 
-	public Address getADDRESS() {
-		return ADDRESS;
-	}
-
-	public Telephone getTELEPHONE() {
-		return TELEPHONE;
+	public Personnel getPERSON() {
+		return PERSON;
 	}
 }
