@@ -23,4 +23,15 @@ public class Author {
 	public String getDATE_AUTHORED() {
 		return DATE_AUTHORED;
 	}
+	
+	@Override
+	public String toString() {
+		String val = "";
+		
+		val += "AUTHOR: " + this.getAUTHOR().toString() + "\n";
+		val += "DATE AUTHORED: " + this.getDATE_AUTHORED();
+		val += "ORGANIZATION: " + this.getORGANIZATION().toString() + "\n";
+		
+		return val;
+	}
 }

@@ -106,6 +106,7 @@ public class Personnel {
 	public String toString() {
 		String val = "";
 
+		val += "PERSONNEL\n";
 		if (this.getPERSONNEL_TYPE().trim().length() > 0) {
 			val += this.getPERSONNEL_TYPE() + ",\n";
 		}
@@ -114,6 +115,9 @@ public class Personnel {
 
 		if (this.getPERSONNEL_ADDRESS() != null) {
 			val += "\n" + this.getPERSONNEL_ADDRESS().toString();
+		}
+		if(this.getTELEPHONE() != null) {
+			val += "\n" + this.getTELEPHONE().toString();
 		}
 
 		return val;

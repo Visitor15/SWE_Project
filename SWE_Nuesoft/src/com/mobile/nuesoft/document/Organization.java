@@ -63,4 +63,17 @@ public class Organization {
 	public void setCODE_SYSTEM_NAME(String cODE_SYSTEM_NAME) {
 		CODE_SYSTEM_NAME = cODE_SYSTEM_NAME;
 	}
+	
+	@Override
+	public String toString() {
+		String val = "";
+		
+		val += "ORGANIZATION\n";
+		val += this.getDISPLAY_NAME() + "\n";
+		val += this.getID() + "\n";
+		val += this.getADDRESS().toString() + "\n";
+		val += this.getTELEPHONE().toString() + "\n";
+		
+		return val;
+	}
 }

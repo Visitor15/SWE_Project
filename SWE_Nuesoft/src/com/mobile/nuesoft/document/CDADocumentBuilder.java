@@ -2,6 +2,8 @@ package com.mobile.nuesoft.document;
 
 import java.util.ArrayList;
 
+import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
+
 public class CDADocumentBuilder {
 
 	public static final String TAG = "CDADocumentBuilder";
@@ -12,6 +14,7 @@ public class CDADocumentBuilder {
 	private ArrayList<DocRecipient> mRecipient = new ArrayList<DocRecipient>();
 	private ArrayList<LegalAuthenticator> mLegalAuthenticator = new ArrayList<LegalAuthenticator>();
 	private ArrayList<Participant> mParticipants = new ArrayList<Participant>();
+	private PatientObj mPatient;
 	private ServiceEvent mServiceEvent;
 	private Encounter mEncounter;
 	private String mID;
@@ -146,9 +149,16 @@ public class CDADocumentBuilder {
 		this.mEncounter = mEncounter;
 	}
 
-	@Override
-	public String toString() {
-		return "CDADocument";
+	public PatientObj getmPatient() {
+		return mPatient;
+	}
+
+	public void setmPatient(PatientObj mPatient) {
+		this.mPatient = mPatient;
+	}
+	
+	public CDADocument build() {
+		return new CDADocument(this);
 	}
 
 	public class CDADocument {
@@ -161,6 +171,7 @@ public class CDADocumentBuilder {
 		private final ArrayList<DocRecipient> RECIPIENT;
 		private final ArrayList<LegalAuthenticator> LEGAL_AUTHENTICATOR;
 		private final ArrayList<Participant> PARTICIPANTS;
+		private final PatientObj PATIENT;
 		private final ServiceEvent SERVICE_EVENT;
 		private final Encounter ENCOUNTER;
 		private final String ID;
@@ -172,6 +183,7 @@ public class CDADocumentBuilder {
 		private final String CODE_SYSTEM_NAME;
 
 		public CDADocument(final CDADocumentBuilder builder) {
+			this.PATIENT = builder.getmPatient();
 			this.AUTHOR = builder.getmAuthor();
 			this.CUSTODIAN = builder.getmCustodian();
 			this.DATA_ENTERER = builder.getmDataEnterer();
@@ -217,6 +229,10 @@ public class CDADocumentBuilder {
 			return CODE_SYSTEM_NAME;
 		}
 
+		public PatientObj getPATIENT() {
+			return PATIENT;
+		}
+
 		public ArrayList<Author> getAUTHOR() {
 			return AUTHOR;
 		}
@@ -248,6 +264,45 @@ public class CDADocumentBuilder {
 		public Encounter getENCOUNTER() {
 			return ENCOUNTER;
 		}
-	}
 
+		@Override
+		public String toString() {
+			String val = "";
+			int i = 0;
+
+			val += "CDADocument: " + this.getDISPLAY_TITLE() + "\n";
+			val += "PATIENT: " + this.getPATIENT().getDisplayName();
+			val += "CREATED: " + this.getEFFECTIVE_TIME() + "\n";
+			val += "SUMMARY: " + this.getSUMMARY_TITLE() + "\n";
+			val += "ID: " + this.getID() + "\n";
+
+			for (i = 0; i < this.getAUTHOR().size(); i++) {
+				val += "AUTHOR: " + this.getAUTHOR().get(i).toString() + "\n";
+			}
+
+			for (i = 0; i < this.getDATA_ENTERER().size(); i++) {
+				val += "DATA ENTERER: " + this.getDATA_ENTERER().get(i).toString() + "\n";
+			}
+
+			for (i = 0; i < this.getRECIPIENT().size(); i++) {
+				val += "RECIPIENT: " + this.getRECIPIENT().get(i).toString() + "\n";
+			}
+
+			for (i = 0; i < this.getLEGAL_AUTHENTICATOR().size(); i++) {
+				val += "LEGAL AUTHENTICATOR: " + this.getLEGAL_AUTHENTICATOR().get(i).toString() + "\n";
+			}
+
+			for (i = 0; i < this.getCUSTODIAN().size(); i++) {
+				val += "CUSTODIAN: " + this.getCUSTODIAN().get(i).toString() + "\n";
+			}
+
+			for (i = 0; i < this.getPARTICIPANTS().size(); i++) {
+				val += "PARTICIPANTS: " + this.getPARTICIPANTS().get(i).toString() + "\n";
+			}
+
+			val += "SERVICE EVENT: " + this.getSERVICE_EVENT().toString() + "\n";
+
+			return val;
+		}
+	}
 }

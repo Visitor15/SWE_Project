@@ -37,4 +37,15 @@ public class DocRecipient {
 		return RECIPIENT;
 	}
 
+	@Override
+	public String toString() {
+		String val = "";
+		
+		val += "DOCUMENT RECIPIENT\n";
+		val += "RECIPIENT: " + this.getRECIPIENT().toString() + "\n";
+		val += "FACILITY: " + this.getFACILITY_NAME() + "\n";
+		val += "REASON FOR REFERRAL: " + this.getREASON_FOR_REFERRAL() + "\n";
+		
+		return val;
+	}
 }

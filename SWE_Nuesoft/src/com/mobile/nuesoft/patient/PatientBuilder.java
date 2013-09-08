@@ -203,6 +203,14 @@ public class PatientBuilder {
 			return IDENTIFIER;
 		}
 
+		public String getDisplayName() {
+			String val = "";
+
+			val += this.getIDENTIFIER().getLAST_NAME() + ", " + this.getIDENTIFIER().getFIRST_NAME();
+
+			return val;
+		}
+
 		public String getBIRTH_TIME() {
 			return BIRTH_TIME;
 		}

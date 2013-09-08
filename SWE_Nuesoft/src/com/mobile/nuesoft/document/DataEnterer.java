@@ -17,4 +17,15 @@ public class DataEnterer {
 	public Organization getORGANIZATION() {
 		return ORGANIZATION;
 	}
+	
+	@Override
+	public String toString() {
+		String val = "";
+		
+		val += "DATA ENTERER\n";
+		val += this.getENTERER().toString() + "\n";
+		val += this.getORGANIZATION().toString();
+		
+		return val;
+	}
 }

@@ -49,7 +49,7 @@ import com.mobile.nuesoft.patient.Severity;
 import com.mobile.nuesoft.patient.Telephone;
 import com.mobile.nuesoft.util.XMLParserUtil;
 
-public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientObj> {
+public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, CDADocument> {
 
 	public static final String TAG = "ParseCDADocumentJob";
 
@@ -74,17 +74,17 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	}
 
 	@Override
-	protected void onPostExecute(PatientObj result) {
+	protected void onPostExecute(CDADocument result) {
 		super.onPostExecute(result);
 
 		if (result != null) {
 			updateBundle = new Bundle();
 			updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, true);
-			updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, result);
+			updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, result.getPATIENT());
 
-			Log.d(TAG, "On Post Execute for PATIENT: " + result);
+			Log.d(TAG, "On Post Execute for DOCUMENT: " + mDocument.toString());
 
-			Nuesoft.getReference().setPatientToCurrent(result);
+			Nuesoft.getReference().setPatientToCurrent(result.getPATIENT());
 
 			PatientUpdateEvent.broadcast(Nuesoft.getReference(), updateBundle);
 		}
@@ -115,7 +115,7 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 	}
 
 	@Override
-	protected PatientObj doInBackground(String... docPath) {
+	protected CDADocument doInBackground(String... docPath) {
 		long runningTime = 0;
 
 		try {
@@ -129,8 +129,9 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 			Node root = XMLParserUtil.getNode("ClinicalDocument", rootList);
 
 			if (docFile.exists()) {
-				mDocument = parseForCDADocument(root);
 				patientObj = parseForPatientObj(root);
+				mDocument = parseForCDADocument(root, patientObj);
+
 			}
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
@@ -143,16 +144,16 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 			e.printStackTrace();
 		}
 
-		return patientObj;
+		return mDocument;
 	}
 
-	private CDADocument parseForCDADocument(final Node node) {
-		Author mAuthor = null;
-		Custodian mCustodian = null;
-		DataEnterer mDataEnterer = null;
-		DocRecipient mRecipient = null;
-		LegalAuthenticator mLegalAuthenticator = null;
-		Participant mParticipant = null;
+	private CDADocument parseForCDADocument(final Node node, final PatientObj patient) {
+		ArrayList<Author> mAuthors = null;
+		ArrayList<Custodian> mCustodians = null;
+		ArrayList<DataEnterer> mDataEnterers = null;
+		ArrayList<DocRecipient> mRecipients = null;
+		ArrayList<LegalAuthenticator> mLegalAuthenticators = null;
+		ArrayList<Participant> mParticipants = null;
 		ServiceEvent mServiceEvent = null;
 		Encounter mEncounter = null;
 		String mID = "";
@@ -166,8 +167,10 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		Node dataNode;
 
+		ArrayList<Node> nodeList;
+
 		mID = XMLParserUtil.getNodeAttr("extension", XMLParserUtil.getNode("id", node.getChildNodes()));
-		Log.d(TAG, "GOT DOC ID: " + mID);
+//		Log.d(TAG, "GOT DOC ID: " + mID);
 
 		dataNode = XMLParserUtil.getNode("code", node.getChildNodes());
 		mCode = XMLParserUtil.getNodeAttr("code", dataNode);
@@ -176,32 +179,52 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		mSummaryTitle = XMLParserUtil.getNodeAttr("displayName", dataNode);
 
 		mDisplayTitle = XMLParserUtil.getNodeValue(XMLParserUtil.getNode("title", node.getChildNodes()));
-		Log.d(TAG, "GOT DOC TITLE: " + mDisplayTitle);
+//		Log.d(TAG, "GOT DOC TITLE: " + mDisplayTitle);
 
 		dataNode = XMLParserUtil.getNode("author", node.getChildNodes());
-		mAuthor = parseForAuthor(dataNode);
+		nodeList = XMLParserUtil.getNamedNodes("author", node);
+		mAuthors = parseForAuthor(nodeList);
 
 		dataNode = XMLParserUtil.getNode("dataEnterer", node.getChildNodes());
-		mDataEnterer = parseForDataEnterer(dataNode);
+		nodeList = XMLParserUtil.getNamedNodes("dataEnterer", node);
+		mDataEnterers = parseForDataEnterer(nodeList);
 
 		dataNode = XMLParserUtil.getNode("custodian", node.getChildNodes());
-		mCustodian = parseForCustodian(dataNode);
+		nodeList = XMLParserUtil.getNamedNodes("custodian", node);
+		mCustodians = parseForCustodian(nodeList);
 
 		dataNode = XMLParserUtil.getNode("informationRecipient", node.getChildNodes());
-		mRecipient = parseForRecipient(dataNode);
+		nodeList = XMLParserUtil.getNamedNodes("informationRecipient", node);
+		mRecipients = parseForRecipient(nodeList);
 
 		dataNode = XMLParserUtil.getNode("legalAuthenticator", node.getChildNodes());
-		mLegalAuthenticator = parseForLegalAuthenticator(dataNode);
+		nodeList = XMLParserUtil.getNamedNodes("legalAuthenticator", node);
+		mLegalAuthenticators = parseForLegalAuthenticator(nodeList);
 
 		dataNode = XMLParserUtil.getNode("legalAuthenticator", node.getChildNodes());
-		participantNodeList = XMLParserUtil.getNamedNodes("participant", node);
-		parseForParticipants(participantNodeList);
+		nodeList = XMLParserUtil.getNamedNodes("participant", node);
+		mParticipants = parseForParticipants(nodeList);
 
 		dataNode = XMLParserUtil.getNode("documentationOf", node.getChildNodes());
 		dataNode = XMLParserUtil.getNode("serviceEvent", dataNode.getChildNodes());
 		mServiceEvent = parseForServiceEvent(dataNode);
 
-		return null;
+		docBuilder.setmPatient(patient);
+		docBuilder.setmAuthor(mAuthors);
+		docBuilder.setmCode(mCode);
+		docBuilder.setmCodeSystem(mCodeSystem);
+		docBuilder.setmCodeSystemName(mCodeSystemName);
+		docBuilder.setmCustodian(mCustodians);
+		docBuilder.setmDataEnterer(mDataEnterers);
+		docBuilder.setmRecipient(mRecipients);
+		docBuilder.setmLegalAuthenticator(mLegalAuthenticators);
+		docBuilder.setmParticipants(mParticipants);
+		docBuilder.setmServiceEvent(mServiceEvent);
+		docBuilder.setmDisplayTitle(mDisplayTitle);
+		docBuilder.setmSummaryTitle(mSummaryTitle);
+		docBuilder.setmID(mID);
+
+		return docBuilder.build();
 	}
 
 	private ServiceEvent parseForServiceEvent(final Node root) {
@@ -346,7 +369,9 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		return participants;
 	}
 
-	private LegalAuthenticator parseForLegalAuthenticator(final Node root) {
+	private ArrayList<LegalAuthenticator> parseForLegalAuthenticator(final ArrayList<Node> nodeList) {
+		ArrayList<LegalAuthenticator> authenticators = new ArrayList<LegalAuthenticator>();
+
 		Personnel authenticator = null;
 		Organization organization = null;
 		Address address = null;
@@ -361,48 +386,59 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		String orgCodeSystem = "";
 		String orgCodeSystemName = "";
 
+		Node root;
 		Node dataNode;
+		for (int i = 0; i < nodeList.size(); i++) {
+			root = nodeList.get(i);
+			
+			authenticationTime = XMLParserUtil.getNodeAttr("value",
+			        XMLParserUtil.getNode("time", root.getChildNodes()));
+			signatureCode = XMLParserUtil.getNodeAttr("code",
+			        XMLParserUtil.getNode("signatureCode", root.getChildNodes()));
 
-		authenticationTime = XMLParserUtil.getNodeAttr("value", XMLParserUtil.getNode("time", root.getChildNodes()));
-		signatureCode = XMLParserUtil.getNodeAttr("code", XMLParserUtil.getNode("signatureCode", root.getChildNodes()));
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			authenticatorId = XMLParserUtil.getNodeAttr("extension",
+			        XMLParserUtil.getNode("id", dataNode.getChildNodes()));
+			authenticatorCodeSystem = XMLParserUtil.getNodeAttr("root",
+			        XMLParserUtil.getNode("id", dataNode.getChildNodes()));
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		authenticatorId = XMLParserUtil.getNodeAttr("extension", XMLParserUtil.getNode("id", dataNode.getChildNodes()));
-		authenticatorCodeSystem = XMLParserUtil.getNodeAttr("root",
-		        XMLParserUtil.getNode("id", dataNode.getChildNodes()));
+			dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
+			orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
+			orgCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+			orgFacilityDisplayName = XMLParserUtil.getNodeAttr("displayName", dataNode);
+			orgCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
 
-		dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
-		orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
-		orgCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
-		orgFacilityDisplayName = XMLParserUtil.getNodeAttr("displayName", dataNode);
-		orgCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+			address = getAddressFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
-		address = getAddressFromNode(dataNode);
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
+			authenticator = getPersonnelFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
-		authenticator = getPersonnelFromNode(dataNode);
+			organization = new Organization(orgFacilityDisplayName, address, telephone);
+			organization.setCODE(orgCode);
+			organization.setCODE_SYSTEM(orgCodeSystem);
+			organization.setCODE_SYSTEM_NAME(orgCodeSystemName);
 
-		organization = new Organization(orgFacilityDisplayName, address, telephone);
-		organization.setCODE(orgCode);
-		organization.setCODE_SYSTEM(orgCodeSystem);
-		organization.setCODE_SYSTEM_NAME(orgCodeSystemName);
+			authenticator.setPERSONNEL_ID(authenticatorId);
+			authenticator.setPERSONNEL_DEPARTMENT(orgFacilityDisplayName);
+			authenticator.setCODE_SYSTEM(authenticatorCodeSystem);
+			authenticator.setPERSONNEL_ADDRESS(address);
+			authenticator.setPERSONNEL_ORGANIZATION(organization);
 
-		authenticator.setPERSONNEL_ID(authenticatorId);
-		authenticator.setPERSONNEL_DEPARTMENT(orgFacilityDisplayName);
-		authenticator.setCODE_SYSTEM(authenticatorCodeSystem);
-		authenticator.setPERSONNEL_ADDRESS(address);
-		authenticator.setPERSONNEL_ORGANIZATION(organization);
+			authenticators.add(new LegalAuthenticator(authenticationTime, signatureCode, authenticator));
+		}
 
-		return new LegalAuthenticator(authenticationTime, signatureCode, authenticator);
+		return authenticators;
 	}
 
-	private DocRecipient parseForRecipient(final Node root) {
+	private ArrayList<DocRecipient> parseForRecipient(final ArrayList<Node> nodeList) {
+		ArrayList<DocRecipient> recipients = new ArrayList<DocRecipient>();
+
 		Personnel recipient = null;
 		Telephone telephone = null;
 		Address address = null;
@@ -417,46 +453,54 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		String orgCodeSystem = "";
 		String orgCodeSystemName = "";
 
+		Node root;
 		Node dataNode;
+		for (int i = 0; i < nodeList.size(); i++) {
+			root = nodeList.get(i);
 
-		dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
-		recipientId = XMLParserUtil.getNodeAttr("extension", dataNode);
-		recipientCodeSystem = XMLParserUtil.getNodeAttr("root", dataNode);
+			dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
+			recipientId = XMLParserUtil.getNodeAttr("extension", dataNode);
+			recipientCodeSystem = XMLParserUtil.getNodeAttr("root", dataNode);
 
-		dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("informationRecipient", dataNode.getChildNodes());
-		recipient = getPersonnelFromNode(dataNode);
+			dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("informationRecipient", dataNode.getChildNodes());
+			recipient = getPersonnelFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("receivedOrganization", dataNode.getChildNodes());
-		orgDisplayName = XMLParserUtil.getNodeValue(XMLParserUtil.getNode("name", dataNode.getChildNodes()));
-		telephone = getTelephoneFromNode(XMLParserUtil.getNode("telecom", dataNode.getChildNodes()));
-		address = getAddressFromNode(XMLParserUtil.getNode("addr", dataNode.getChildNodes()));
+			dataNode = XMLParserUtil.getNode("intendedRecipient", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("receivedOrganization", dataNode.getChildNodes());
+			orgDisplayName = XMLParserUtil.getNodeValue(XMLParserUtil.getNode("name", dataNode.getChildNodes()));
+			telephone = getTelephoneFromNode(XMLParserUtil.getNode("telecom", dataNode.getChildNodes()));
+			address = getAddressFromNode(XMLParserUtil.getNode("addr", dataNode.getChildNodes()));
 
-		dataNode = XMLParserUtil.getNode("standardIndustryClassCode", dataNode.getChildNodes());
-		orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
-		orgId = orgCode;
-		orgFacilityName = XMLParserUtil.getNodeAttr("displayName", dataNode);
-		orgCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
-		orgCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+			dataNode = XMLParserUtil.getNode("standardIndustryClassCode", dataNode.getChildNodes());
+			orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
+			orgId = orgCode;
+			orgFacilityName = XMLParserUtil.getNodeAttr("displayName", dataNode);
+			orgCodeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+			orgCodeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
 
-		organization = new Organization(orgDisplayName, address, telephone);
-		organization.setID(orgId);
-		organization.setCODE(orgCode);
-		organization.setCODE_SYSTEM(orgCodeSystem);
-		organization.setCODE_SYSTEM_NAME(orgCodeSystemName);
+			organization = new Organization(orgDisplayName, address, telephone);
+			organization.setID(orgId);
+			organization.setCODE(orgCode);
+			organization.setCODE_SYSTEM(orgCodeSystem);
+			organization.setCODE_SYSTEM_NAME(orgCodeSystemName);
 
-		recipient.setPERSONNEL_ID(recipientId);
-		recipient.setCODE_SYSTEM(recipientCodeSystem);
-		recipient.setPERSONNEL_ADDRESS(address);
-		recipient.setPERSONNEL_DEPARTMENT(orgFacilityName);
-		recipient.setPERSONNEL_ORGANIZATION(organization);
+			recipient.setPERSONNEL_ID(recipientId);
+			recipient.setCODE_SYSTEM(recipientCodeSystem);
+			recipient.setPERSONNEL_ADDRESS(address);
+			recipient.setPERSONNEL_DEPARTMENT(orgFacilityName);
+			recipient.setPERSONNEL_ORGANIZATION(organization);
 
-		return new DocRecipient(recipient, orgFacilityName);
+			recipients.add(new DocRecipient(recipient, orgFacilityName));
+		}
+
+		return recipients;
 	}
 
-	private Custodian parseForCustodian(final Node root) {
+	private ArrayList<Custodian> parseForCustodian(final ArrayList<Node> nodeList) {
+		ArrayList<Custodian> custodians = new ArrayList<Custodian>();
+
 		Organization organization = null;
 		Telephone telephone = null;
 		Address address = null;
@@ -467,39 +511,46 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		String codeSystem = "";
 		String codeSystemName = "";
 
+		Node root;
 		Node dataNode;
+		for (int i = 0; i < nodeList.size(); i++) {
+			root = nodeList.get(i);
+			dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
+			orgId = XMLParserUtil.getNodeAttr("root", dataNode);
+			orgCode = XMLParserUtil.getNodeAttr("root", dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
-		dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
-		orgId = XMLParserUtil.getNodeAttr("root", dataNode);
-		orgCode = XMLParserUtil.getNodeAttr("root", dataNode);
+			dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("name", dataNode.getChildNodes());
+			orgDisplayName = XMLParserUtil.getNodeValue(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
-		dataNode = XMLParserUtil.getNode("name", dataNode.getChildNodes());
-		orgDisplayName = XMLParserUtil.getNodeValue(dataNode);
+			dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+			telephone = getTelephoneFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
-		dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
-		telephone = getTelephoneFromNode(dataNode);
+			dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+			address = getAddressFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedCustodian", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("representedCustodianOrganization", dataNode.getChildNodes());
-		dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
-		address = getAddressFromNode(dataNode);
+			organization = new Organization(orgDisplayName, address, telephone);
+			organization.setCODE(orgCode);
+			organization.setID(orgId);
+			organization.setCODE_SYSTEM(codeSystem);
+			organization.setCODE_SYSTEM_NAME(codeSystemName);
 
-		organization = new Organization(orgDisplayName, address, telephone);
-		organization.setCODE(orgCode);
-		organization.setID(orgId);
-		organization.setCODE_SYSTEM(codeSystem);
-		organization.setCODE_SYSTEM_NAME(codeSystemName);
+			custodians.add(new Custodian(organization));
+		}
 
-		return new Custodian(organization);
+		return custodians;
 	}
 
-	private DataEnterer parseForDataEnterer(final Node root) {
+	private ArrayList<DataEnterer> parseForDataEnterer(final ArrayList<Node> nodeList) {
+		ArrayList<DataEnterer> dataEnterers = new ArrayList<DataEnterer>();
+
 		Personnel person = null;
 		Organization organization = null;
 		Address address = null;
@@ -512,47 +563,53 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		String codeSystem = "";
 		String codeSystemName = "";
 
+		Node root;
 		Node dataNode;
+		for (int i = 0; i < nodeList.size(); i++) {
+			root = nodeList.get(i);
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
+			entererId = XMLParserUtil.getNodeAttr("extension", dataNode);
+			orgId = XMLParserUtil.getNodeAttr("root", dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
-		entererId = XMLParserUtil.getNodeAttr("extension", dataNode);
-		orgId = XMLParserUtil.getNodeAttr("root", dataNode);
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
+			orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
+			codeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+			codeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+			orgDisplayName = XMLParserUtil.getNodeAttr("displayName", dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
-		orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
-		codeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
-		codeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
-		orgDisplayName = XMLParserUtil.getNodeAttr("displayName", dataNode);
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+			address = getAddressFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
-		address = getAddressFromNode(dataNode);
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+			telephone = getTelephoneFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
-		telephone = getTelephoneFromNode(dataNode);
+			dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
+			dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
+			person = getPersonnelFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedEntity", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
-		person = getPersonnelFromNode(dataNode);
+			person.setCODE_SYSTEM(codeSystem);
+			person.setCODE_SYSTEM_NAME(codeSystemName);
+			person.setPERSONNEL_ADDRESS(address);
+			person.setPERSONNEL_ID(entererId);
 
-		person.setCODE_SYSTEM(codeSystem);
-		person.setCODE_SYSTEM_NAME(codeSystemName);
-		person.setPERSONNEL_ADDRESS(address);
-		person.setPERSONNEL_ID(entererId);
+			organization = new Organization(orgDisplayName, address, telephone);
+			organization.setCODE_SYSTEM(codeSystem);
+			organization.setCODE_SYSTEM_NAME(codeSystemName);
+			organization.setCODE(orgCode);
+			organization.setID(orgId);
 
-		organization = new Organization(orgDisplayName, address, telephone);
-		organization.setCODE_SYSTEM(codeSystem);
-		organization.setCODE_SYSTEM_NAME(codeSystemName);
-		organization.setCODE(orgCode);
-		organization.setID(orgId);
-
-		return new DataEnterer(person, organization);
+			dataEnterers.add(new DataEnterer(person, organization));
+		}
+		return dataEnterers;
 	}
 
-	private Author parseForAuthor(final Node root) {
+	private ArrayList<Author> parseForAuthor(final ArrayList<Node> nodeList) {
+		ArrayList<Author> authorList = new ArrayList<Author>();
+
 		Address mAuthorAddress = null;
 		Telephone mAuthorTelephone = null;
 		Personnel person = null;
@@ -565,50 +622,55 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		String orgCode = "";
 		String orgDepartment = "";
 
+		Node rootNode;
 		Node dataNode;
+		for (int i = 0; i < nodeList.size(); i++) {
+			rootNode = nodeList.get(i);
+			dataNode = XMLParserUtil.getNode("time", rootNode.getChildNodes());
+			timeAuthored = XMLParserUtil.getNodeAttr("value", dataNode);
+//			Log.d(TAG, "GOT TIME AUTHORED: " + timeAuthored);
 
-		dataNode = XMLParserUtil.getNode("time", root.getChildNodes());
-		timeAuthored = XMLParserUtil.getNodeAttr("value", dataNode);
-		Log.d(TAG, "GOT TIME AUTHORED: " + timeAuthored);
+			dataNode = XMLParserUtil.getNode("assignedAuthor", rootNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
+			authorID = XMLParserUtil.getNodeAttr("extension", dataNode);
+//			Log.d(TAG, "GOT AUTHOR ID: " + authorID);
 
-		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("id", dataNode.getChildNodes());
-		authorID = XMLParserUtil.getNodeAttr("extension", dataNode);
-		Log.d(TAG, "GOT AUTHOR ID: " + authorID);
+			dataNode = XMLParserUtil.getNode("assignedAuthor", rootNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
+			orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
+			orgDepartment = XMLParserUtil.getNodeAttr("displayName", dataNode);
+			codeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
+			codeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
+//			Log.d(TAG, "GOT ORG TYPE CODE: " + orgCode);
+//			Log.d(TAG, "GOT ORG DEPARTMENT: " + orgDepartment);
+//			Log.d(TAG, "GOT ORG CODE SYSTEM: " + codeSystem);
+//			Log.d(TAG, "GOT ORG CODE SYSTEM NAME: " + codeSystemName);
 
-		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("code", dataNode.getChildNodes());
-		orgCode = XMLParserUtil.getNodeAttr("code", dataNode);
-		orgDepartment = XMLParserUtil.getNodeAttr("displayName", dataNode);
-		codeSystem = XMLParserUtil.getNodeAttr("codeSystem", dataNode);
-		codeSystemName = XMLParserUtil.getNodeAttr("codeSystemName", dataNode);
-		Log.d(TAG, "GOT ORG TYPE CODE: " + orgCode);
-		Log.d(TAG, "GOT ORG DEPARTMENT: " + orgDepartment);
-		Log.d(TAG, "GOT ORG CODE SYSTEM: " + codeSystem);
-		Log.d(TAG, "GOT ORG CODE SYSTEM NAME: " + codeSystemName);
+			dataNode = XMLParserUtil.getNode("assignedAuthor", rootNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
+			mAuthorAddress = getAddressFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("addr", dataNode.getChildNodes());
-		mAuthorAddress = getAddressFromNode(dataNode);
+			dataNode = XMLParserUtil.getNode("assignedAuthor", rootNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
+			mAuthorTelephone = this.getTelephoneFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("telecom", dataNode.getChildNodes());
-		mAuthorTelephone = this.getTelephoneFromNode(dataNode);
+			organization = new Organization(orgDepartment, mAuthorAddress, mAuthorTelephone);
+			organization.setCODE(orgCode);
+			organization.setCODE_SYSTEM(codeSystem);
+			organization.setCODE_SYSTEM_NAME(codeSystemName);
 
-		organization = new Organization(orgDepartment, mAuthorAddress, mAuthorTelephone);
-		organization.setCODE(orgCode);
-		organization.setCODE_SYSTEM(codeSystem);
-		organization.setCODE_SYSTEM_NAME(codeSystemName);
+			dataNode = XMLParserUtil.getNode("assignedAuthor", rootNode.getChildNodes());
+			dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
+			person = getPersonnelFromNode(dataNode);
 
-		dataNode = XMLParserUtil.getNode("assignedAuthor", root.getChildNodes());
-		dataNode = XMLParserUtil.getNode("assignedPerson", dataNode.getChildNodes());
-		person = getPersonnelFromNode(dataNode);
+			person.setPERSONNEL_ADDRESS(mAuthorAddress);
+			person.setPERSONNEL_ID(authorID);
+			person.setPERSONNEL_DEPARTMENT(orgDepartment);
 
-		person.setPERSONNEL_ADDRESS(mAuthorAddress);
-		person.setPERSONNEL_ID(authorID);
-		person.setPERSONNEL_DEPARTMENT(orgDepartment);
+			authorList.add(new Author(person, organization, timeAuthored));
+		}
 
-		return new Author(person, organization, timeAuthored);
+		return authorList;
 	}
 
 	private Personnel getPersonnelFromNode(final Node root) {
@@ -993,14 +1055,14 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 		Node dataNode = XMLParserUtil.getNode("code", root.getChildNodes());
 		String code = XMLParserUtil.getNodeAttr("code", dataNode);
-		Log.d(TAG, "GOT MEDICATION CODE: " + code);
+//		Log.d(TAG, "GOT MEDICATION CODE: " + code);
 
 		ArrayList<String> medicationNarrativeName = new ArrayList<String>();
 		dataNode = XMLParserUtil.getNode("text", root.getChildNodes());
 		dataNode = XMLParserUtil.getNode("list", dataNode.getChildNodes());
 		itemList = XMLParserUtil.getNamedNodes("item", dataNode);
 
-		Log.d(TAG, "# OF MEDICATIONS IN PATIENT HISTORY: " + itemList.size());
+//		Log.d(TAG, "# OF MEDICATIONS IN PATIENT HISTORY: " + itemList.size());
 
 		Node tempNode;
 		for (Node n : itemList) {
@@ -1009,14 +1071,14 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 		}
 
 		entryList = XMLParserUtil.getNamedNodes("entry", root);
-		Log.d(TAG, "# OF MEDICATION ENTRIES: " + entryList.size());
+//		Log.d(TAG, "# OF MEDICATION ENTRIES: " + entryList.size());
 
 		for (int i = 0; i < entryList.size(); i++) {
 			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
 
 			tempNode = XMLParserUtil.getNode("statusCode", tempNode.getChildNodes());
 			mStatus = XMLParserUtil.getNodeAttr("code", tempNode);
-			Log.d(TAG, "MEDICATION STATUS: " + mStatus);
+//			Log.d(TAG, "MEDICATION STATUS: " + mStatus);
 
 			tempNode = entryList.get(i);
 			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
@@ -1028,7 +1090,7 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 
 				for (int k = 0; k < dateNode.getChildNodes().getLength(); k++) {
 					tempNode = dateNode.getChildNodes().item(k);
-					Log.d(TAG, "MEDICATION DATE NODE NAME: " + tempNode.getNodeName());
+//					Log.d(TAG, "MEDICATION DATE NODE NAME: " + tempNode.getNodeName());
 					if (tempNode.getNodeName().equals("low")) {
 						mDateLow = XMLParserUtil.getNodeAttr("value", tempNode);
 					} else if (tempNode.getNodeName().equals("high")) {
@@ -1040,24 +1102,24 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, PatientOb
 				}
 			}
 
-			Log.d(TAG, "MEDICATION DATE LOW: " + mDateLow);
-			Log.d(TAG, "MEDICATION DATE HIGH: " + mDateHigh);
+//			Log.d(TAG, "MEDICATION DATE LOW: " + mDateLow);
+//			Log.d(TAG, "MEDICATION DATE HIGH: " + mDateHigh);
 
 			tempNode = entryList.get(i);
 			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
 			tempNode = XMLParserUtil.getNode("routeCode", tempNode.getChildNodes());
 			mAdministeredMethod = XMLParserUtil.getNodeAttr("displayName", tempNode);
-			Log.d(TAG, "MEDICATION ADMINISTERED METHOD: " + mAdministeredMethod);
+//			Log.d(TAG, "MEDICATION ADMINISTERED METHOD: " + mAdministeredMethod);
 
 			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
 			tempNode = XMLParserUtil.getNode("doseQuantity", tempNode.getChildNodes());
 			mDosageQuantity = XMLParserUtil.getNodeAttr("value", tempNode);
-			Log.d(TAG, "MEDICATION DOSAGE QUANTITY: " + mDosageQuantity);
+//			Log.d(TAG, "MEDICATION DOSAGE QUANTITY: " + mDosageQuantity);
 
 			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
 			tempNode = XMLParserUtil.getNode("administrationUnitCode", tempNode.getChildNodes());
 			mAdministeredType = XMLParserUtil.getNodeAttr("displayName", tempNode);
-			Log.d(TAG, "MEDICATION TYPE: " + mAdministeredType);
+//			Log.d(TAG, "MEDICATION TYPE: " + mAdministeredType);
 
 			tempNode = XMLParserUtil.getNode("substanceAdministration", entryList.get(i).getChildNodes());
 			tempNode = XMLParserUtil.getNode("consumable", tempNode.getChildNodes());

@@ -24,4 +24,16 @@ public class Participant {
 	public Personnel getPERSON() {
 		return PERSON;
 	}
+	
+	@Override
+	public String toString() {
+		String val = "";
+		
+		val += "PARTICIPANT\n";
+		val += "NAME: " + this.getPERSON().toString() + "\n";
+		val += "ROLE: " + this.getROLE() + "\n";
+		val += "TYPE: " + this.getTYPE() + "\n";
+		
+		return val;
+	}
 }
