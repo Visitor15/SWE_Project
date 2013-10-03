@@ -27,7 +27,7 @@ public class SummaryFragment extends NuesoftFragment {
 	}
 
 	@Override
-	public void onFragmentCreated(Bundle savedInstanceState) {
+	public void onFragmentCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -42,7 +42,7 @@ public class NavigationFragment extends NuesoftFragment implements OnPatientObjU
 	}
 
 	@Override
-	public void onFragmentCreated(Bundle savedInstanceState) {
+	public void onFragmentCreate(Bundle savedInstanceState) {
 		HashMap<String, ArrayList<String>> data = new HashMap<String, ArrayList<String>>();
 		ArrayList<String> contentData = new ArrayList<String>();
 

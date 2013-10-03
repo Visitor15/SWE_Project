@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,17 +17,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mobile.nuesoft.Nuesoft;
 import com.mobile.nuesoft.NuesoftFragment;
 import com.mobile.nuesoft.R;
 import com.mobile.nuesoft.jobs.ParseCDADocumentJob;
 import com.mobile.nuesoft.jobs.PatientUpdateEvent;
-import com.mobile.nuesoft.patient.PatientBuilder;
 import com.mobile.nuesoft.patient.PatientBuilder.PatientObj;
 
-public class PatientFragment extends NuesoftFragment implements
-        OnPatientObjUpdated {
+public class PatientFragment extends NuesoftFragment implements OnPatientObjUpdated {
 
 	public static final String TAG = "PatientFragment";
 
@@ -50,6 +50,8 @@ public class PatientFragment extends NuesoftFragment implements
 
 	private String docPath = "mnt/sdcard0/download";
 
+	private Uri parseUri;
+
 	private LinearLayout activeReferralContainer;
 
 	private OnPatientUpdatedListener onPatientUpdatedListener = new OnPatientUpdatedListener();
@@ -57,12 +59,12 @@ public class PatientFragment extends NuesoftFragment implements
 	public PatientFragment() {
 	}
 
+	public PatientFragment(final Uri parseUri) {
+		this.parseUri = parseUri;
+	}
+
 	@Override
-	public void onFragmentCreated(Bundle savedInstanceState) {
-		if (docParseJob == null || shouldParse) {
-			docParseJob = new ParseCDADocumentJob();
-			docParseJob.execute(docPath);
-		}
+	public void onFragmentCreate(Bundle savedInstanceState) {
 	}
 
 	@Override
@@ -83,8 +85,19 @@ public class PatientFragment extends NuesoftFragment implements
 
 	@Override
 	public void onFragmentStart() {
-		// TODO Auto-generated method stub
+		if (docParseJob == null || shouldParse) {
+			docParseJob = new ParseCDADocumentJob();
 
+			if (parseUri != null) {
+				docParseJob.execute(parseUri.getPath());
+			} else if (docPath != null || docPath.trim().length() > 0) {
+				docParseJob.execute(docPath);
+				
+				shouldParse = false;
+			} else {
+				Toast.makeText(getActivity(), "A parse error has occurred: No file found", Toast.LENGTH_LONG).show();
+			}
+		}
 	}
 
 	@Override
@@ -93,18 +106,15 @@ public class PatientFragment extends NuesoftFragment implements
 	}
 
 	@Override
-	public View onFragmentCreateView(LayoutInflater inflater,
-	        ViewGroup container, Bundle savedInstanceState) {
+	public View onFragmentCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.profile_frag_layout, null);
 
-		activeReferralContainer = (LinearLayout) v
-		        .findViewById(R.id.ll_active_referrals_container);
+		activeReferralContainer = (LinearLayout) v.findViewById(R.id.ll_active_referrals_container);
 		mPatientTitleName = (TextView) v.findViewById(R.id.nt_name);
 
 		// Instantiate a ViewPager and a PagerAdapter.
 		mPager = (ViewPager) v.findViewById(R.id.pager);
-		mPagerAdapter = new ScreenSlidePagerAdapter(getChildFragmentManager(),
-		        getActivity());
+		mPagerAdapter = new ScreenSlidePagerAdapter(getChildFragmentManager(), getActivity());
 		mPager.setAdapter(mPagerAdapter);
 
 		initActiveReferralFragment();
@@ -114,15 +124,12 @@ public class PatientFragment extends NuesoftFragment implements
 
 	@Override
 	public void onFragmentViewCreated(View v, Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 
 	}
 
 	private void initActiveReferralFragment() {
-		this.getChildFragmentManager()
-		        .beginTransaction()
-		        .replace(R.id.ll_active_referrals_container,
-		                new ActiveReferralsFragment()).commit();
+		this.getChildFragmentManager().beginTransaction()
+		        .replace(R.id.ll_active_referrals_container, new ActiveReferralsFragment()).commit();
 	}
 
 	// private void initDrawer() {
@@ -142,11 +149,9 @@ public class PatientFragment extends NuesoftFragment implements
 
 		public ScreenSlidePagerAdapter(final FragmentManager fm, final Context c) {
 			super(fm);
-			categoryList.add(c.getResources().getString(
-			        R.string.patient_summary));
+			categoryList.add(c.getResources().getString(R.string.patient_summary));
 
-			String[] tempList = c.getResources().getStringArray(
-			        R.array.profile_categories);
+			String[] tempList = c.getResources().getStringArray(R.array.profile_categories);
 			for (String s : tempList) {
 				categoryList.add(s);
 			}
@@ -178,10 +183,8 @@ public class PatientFragment extends NuesoftFragment implements
 		}
 
 		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-		        Bundle savedInstanceState) {
-			ViewGroup rootView = (ViewGroup) inflater.inflate(
-			        R.layout.profile_card_layout, container, false);
+		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+			ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.profile_card_layout, container, false);
 
 			((TextView) rootView.findViewById(R.id.nt_title)).setText(mTitle);
 
@@ -209,14 +212,16 @@ public class PatientFragment extends NuesoftFragment implements
 	public void onPatientObjUpdated(Bundle b) {
 		if (b != null) {
 			if (b.containsKey(PatientUpdateEvent.PATIENT_OBJ_KEY)) {
-				mPatient = (PatientObj) b
-				        .getSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY);
+				mPatient = (PatientObj) b.getSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY);
 
 				if (b.containsKey(ParseCDADocumentJob.IS_FINISHED_KEY)) {
 					if ((b.getBoolean(ParseCDADocumentJob.IS_FINISHED_KEY))) {
 
-						mPatientTitleName.setText(mPatient.getIDENTIFIER().getFIRST_NAME()
-						        + " " + mPatient.getIDENTIFIER().getLAST_NAME());
+						mPatientTitleName.setText(mPatient.getIDENTIFIER().getFIRST_NAME() + " "
+						        + mPatient.getIDENTIFIER().getLAST_NAME());
+
+						// Log.d(TAG, "PATIENTE UPDATED: " +
+						// mPatient.toString());
 
 						return;
 					}

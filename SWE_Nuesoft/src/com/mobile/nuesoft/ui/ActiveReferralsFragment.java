@@ -22,7 +22,7 @@ public class ActiveReferralsFragment extends NuesoftFragment implements OnClickL
 	}
 
 	@Override
-	public void onFragmentCreated(Bundle savedInstanceState) {
+	public void onFragmentCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		
 	}

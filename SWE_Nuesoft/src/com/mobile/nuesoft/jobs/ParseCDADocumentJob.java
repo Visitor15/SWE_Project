@@ -78,11 +78,16 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, CDADocume
 		super.onPostExecute(result);
 
 		if (result != null) {
+			
+			Log.d(TAG, "DOCUMENT: " + result.toString());
+			
+			Log.d(TAG, "PATIENT: " + result.getPATIENT().toString());
+			
 			updateBundle = new Bundle();
 			updateBundle.putBoolean(ParseCDADocumentJob.IS_FINISHED_KEY, true);
 			updateBundle.putSerializable(PatientUpdateEvent.PATIENT_OBJ_KEY, result.getPATIENT());
 
-			Log.d(TAG, "On Post Execute for DOCUMENT: " + mDocument.toString());
+//			Log.d(TAG, "On Post Execute for DOCUMENT: " + mDocument.toString());
 
 			Nuesoft.getReference().setPatientToCurrent(result.getPATIENT());
 

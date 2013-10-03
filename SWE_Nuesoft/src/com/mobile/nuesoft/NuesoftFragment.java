@@ -9,12 +9,13 @@ import android.view.ViewGroup;
 
 public abstract class NuesoftFragment extends Fragment {
 
+	public static String TAG = "";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		onFragmentCreated(savedInstanceState);
+		onFragmentCreate(savedInstanceState);
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public abstract class NuesoftFragment extends Fragment {
 		onFragmentViewCreated(view, savedInstanceState);
 	}
 	
-	public abstract void onFragmentCreated(final Bundle savedInstanceState);
+	public abstract void onFragmentCreate(final Bundle savedInstanceState);
 	
 	public abstract void onFragmentPaused();
 	
