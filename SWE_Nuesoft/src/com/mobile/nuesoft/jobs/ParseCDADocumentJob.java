@@ -124,8 +124,10 @@ public class ParseCDADocumentJob extends AsyncTask<String, PatientObj, CDADocume
 		long runningTime = 0;
 
 		try {
-			docFile = new File("storage/sdcard0/Download/cda_sample_file.xml");
+			docFile = new File(docPath[0]);
 
+			Log.d(TAG, "Attempting to parse: " + docFile.getAbsolutePath());
+			
 			dbFactory = DocumentBuilderFactory.newInstance();
 			dBuilder = dbFactory.newDocumentBuilder();
 			doc = dBuilder.parse(docFile);
