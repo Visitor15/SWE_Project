@@ -1,0 +1,12 @@
+
+# /
+/bin
+/gen
+
+*~
+*.orig
+local.properties
+*.old
+*.java.*
+.directory
+/proguard
